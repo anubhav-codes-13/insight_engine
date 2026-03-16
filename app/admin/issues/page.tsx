@@ -3,7 +3,7 @@
 import { useState } from "react";
 import AdminLayout from "@/components/dashboard/AdminLayout";
 import { INSIGHTS_TOPICS, L1_CATEGORIES } from "@/lib/mockData";
-import { BadgeCheck, OctagonAlert, TrendingUp, Search, Smile, Frown, Minus } from "lucide-react";
+import { BadgeCheck, OctagonAlert, TrendingUp, Search, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -70,16 +70,18 @@ export default function IssueInsights() {
                     className="border border-white/5 bg-zinc-950 rounded-[40px] overflow-hidden shadow-2xl"
                 >
                     <div className="overflow-x-auto scrollbar-hide">
-                        <table className="w-full text-left border-collapse min-w-[900px]">
+                        <table className="w-full text-left border-collapse min-w-[1100px]">
                             <thead>
                                 <tr className="border-b border-white/5">
                                     <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center w-12">#</th>
                                     <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600">Topic</th>
                                     <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">Volume</th>
+                                    <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">CSAT</th>
                                     <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">Drop-off</th>
+                                    <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">AHT</th>
+                                    <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">Is Resolved</th>
+                                    <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">Repeat</th>
                                     <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">Escalation</th>
-                                    <th className="px-6 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 text-center">Sentiment</th>
-                                    <th className="px-8 py-7 text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/[0.02]">
@@ -127,10 +129,54 @@ export default function IssueInsights() {
                                                     <span className="text-sm font-black text-white tabular-nums">{issue.volume.toLocaleString()}</span>
                                                 </td>
 
+                                                {/* CSAT */}
+                                                <td className="px-6 py-5 text-center">
+                                                    <span className={cn(
+                                                        "inline-flex px-2.5 py-1 rounded-lg text-xs font-bold border tabular-nums",
+                                                        parseInt(issue.csat) >= 80 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/10" :
+                                                        parseInt(issue.csat) >= 70 ? "bg-amber-500/10 text-amber-400 border-amber-500/10" :
+                                                        "bg-red-500/10 text-red-400 border-red-500/10"
+                                                    )}>
+                                                        {issue.csat}
+                                                    </span>
+                                                </td>
+
                                                 {/* Drop-off */}
                                                 <td className="px-6 py-5 text-center">
                                                     <span className="inline-flex px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs font-bold border border-red-500/10 tabular-nums">
                                                         {issue.dropOff}
+                                                    </span>
+                                                </td>
+
+                                                {/* AHT */}
+                                                <td className="px-6 py-5 text-center">
+                                                    <span className="text-xs font-bold text-zinc-300 tabular-nums">{issue.aht}</span>
+                                                </td>
+
+                                                {/* Is Resolved */}
+                                                <td className="px-6 py-5 text-center">
+                                                    <span className={cn(
+                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border tabular-nums",
+                                                        parseInt(issue.isResolved) >= 80 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/10" :
+                                                        parseInt(issue.isResolved) >= 60 ? "bg-amber-500/10 text-amber-400 border-amber-500/10" :
+                                                        "bg-red-500/10 text-red-400 border-red-500/10"
+                                                    )}>
+                                                        {parseInt(issue.isResolved) >= 70
+                                                            ? <CheckCircle2 className="w-3 h-3" />
+                                                            : <XCircle className="w-3 h-3" />}
+                                                        {issue.isResolved}
+                                                    </span>
+                                                </td>
+
+                                                {/* Repeat */}
+                                                <td className="px-6 py-5 text-center">
+                                                    <span className={cn(
+                                                        "inline-flex px-2.5 py-1 rounded-lg text-xs font-bold border tabular-nums",
+                                                        parseInt(issue.repeat) >= 30 ? "bg-red-500/10 text-red-400 border-red-500/10" :
+                                                        parseInt(issue.repeat) >= 18 ? "bg-amber-500/10 text-amber-400 border-amber-500/10" :
+                                                        "bg-zinc-800 text-zinc-400 border-white/5"
+                                                    )}>
+                                                        {issue.repeat}
                                                     </span>
                                                 </td>
 
@@ -140,40 +186,12 @@ export default function IssueInsights() {
                                                         {issue.escalation}
                                                     </span>
                                                 </td>
-
-                                                {/* Sentiment */}
-                                                <td className="px-6 py-5 text-center">
-                                                    <span className={cn(
-                                                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border",
-                                                        issue.sentiment === "Positive" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/10" :
-                                                        issue.sentiment === "Negative" ? "bg-red-500/10 text-red-400 border-red-500/10" :
-                                                        "bg-zinc-800 text-zinc-400 border-white/5"
-                                                    )}>
-                                                        {issue.sentiment === "Positive" ? <Smile className="w-3 h-3" /> :
-                                                         issue.sentiment === "Negative" ? <Frown className="w-3 h-3" /> :
-                                                         <Minus className="w-3 h-3" />}
-                                                        {issue.sentiment}
-                                                    </span>
-                                                </td>
-
-                                                {/* Status */}
-                                                <td className="px-8 py-5">
-                                                    <div className={cn(
-                                                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest",
-                                                        isEscalated
-                                                            ? "bg-amber-500/10 text-amber-500 border border-amber-500/10"
-                                                            : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/10"
-                                                    )}>
-                                                        {isEscalated ? <TrendingUp className="w-3.5 h-3.5" /> : <BadgeCheck className="w-3.5 h-3.5" />}
-                                                        {isEscalated ? "Escalated" : "Automated"}
-                                                    </div>
-                                                </td>
                                             </motion.tr>
                                         );
                                     })}
                                     {filteredIssues.length === 0 && (
                                         <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                                            <td colSpan={7} className="px-8 py-16 text-center text-zinc-500 font-medium">
+                                            <td colSpan={9} className="px-8 py-16 text-center text-zinc-500 font-medium">
                                                 No topics found matching your filters.
                                             </td>
                                         </motion.tr>

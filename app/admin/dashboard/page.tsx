@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import AdminLayout from "@/components/dashboard/AdminLayout";
-import { TOP_ISSUES, ANALYTICS_STATS, CALL_TRENDS_24H, CALL_TRENDS_7D, CALL_TRENDS_30D, TOP_TOPICS } from "@/lib/mockData";
+import { CLUSTER_DATA, CHANNEL_TRENDS, CHANNEL_STATS, AI_INSIGHTS, TOP_TOPICS } from "@/lib/mockData";
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
@@ -21,62 +21,19 @@ export default function AdminDashboard() {
     const [channel, setChannel] = useState<Channel>("All");
     const [followUpText, setFollowUpText] = useState("");
 
-    const trendData =
-        dateRange === "24h" ? CALL_TRENDS_24H
-        : dateRange === "7d" ? CALL_TRENDS_7D
-        : CALL_TRENDS_30D;
+    const trendData = CHANNEL_TRENDS[dateRange][channel];
+    const stats = CHANNEL_STATS[channel];
+    const clusters = CLUSTER_DATA[dateRange][channel];
+    const insight = AI_INSIGHTS[dateRange][channel];
 
     return (
         <AdminLayout>
             <div className="space-y-6 md:space-y-8 max-w-7xl mx-auto pb-12">
-                {/* Real-time Alert Banner */}
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="relative overflow-hidden p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4"
-                >
-                    <div className="flex items-center gap-2 text-red-500 shrink-0">
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Critical Alert</span>
-                    </div>
-                    <div className="flex-1 whitespace-nowrap overflow-hidden">
-                        <p className="text-xs text-red-200 inline-block animate-marquee md:animate-none">
-                            ⚠ Payment Failures Spiking — 300% increase detected in the last 20 minutes. Affecting Region: US-EAST-1.
-                        </p>
-                    </div>
-                </motion.div>
-
-                {/* AI Generated Summary */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 }}
-                    className="p-6 md:p-8 rounded-[32px] bg-zinc-950 border border-blue-500/10 flex gap-4"
-                >
-                    <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/10 shrink-0 self-start">
-                        <Sparkles className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <div className="space-y-1">
-                        <p className="text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600">AI Insight</p>
-                        <p className="text-sm text-zinc-300 leading-relaxed font-medium">
-                            Support volume peaked on Friday at 7,200 interactions — a 24% surge vs. last week. Payment failure clusters drove 62% of escalations. AI resolution rate improved by 4.2 points to 83% after the SLM-v4.0 hot-patch deployed Wednesday. Recommend reviewing refund delay flows where drop-off remains elevated at 41%.
-                        </p>
-                    </div>
-                </motion.div>
-
-                {/* Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <StatCard delay={0.1} label="Total Support Requests" value={ANALYTICS_STATS.totalRequests} trend="+12.5%" up icon={<Users className="w-4 h-4" />} />
-                    <StatCard delay={0.15} label="Avg. Healing Time" value={ANALYTICS_STATS.avgHealingTime} trend="-0.4m" up={false} icon={<Clock className="w-4 h-4" />} />
-                    <StatCard delay={0.2} label="CSAT Score" value={ANALYTICS_STATS.csatScore} trend="+2.1%" up icon={<Zap className="w-4 h-4" />} />
-                    <StatCard delay={0.25} label="Drop-Off Rate" value={ANALYTICS_STATS.dropOffRate} trend="+0.3%" up={false} icon={<Activity className="w-4 h-4" />} />
-                </div>
-
                 {/* Filter Row */}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
+                    transition={{ delay: 0 }}
                     className="flex flex-wrap items-center justify-between gap-3"
                 >
                     {/* Date Range */}
@@ -115,6 +72,49 @@ export default function AdminDashboard() {
                     </div>
                 </motion.div>
 
+                {/* Real-time Alert Banner */}
+                {/* <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="relative overflow-hidden p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4"
+                >
+                    <div className="flex items-center gap-2 text-red-500 shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest hidden sm:inline">Critical Alert</span>
+                    </div>
+                    <div className="flex-1 whitespace-nowrap overflow-hidden">
+                        <p className="text-xs text-red-200 inline-block animate-marquee md:animate-none">
+                            ⚠ Payment Failures Spiking — 300% increase detected in the last 20 minutes. Affecting Region: US-EAST-1.
+                        </p>
+                    </div>
+                </motion.div> */}
+
+                {/* AI Generated Summary */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="p-6 md:p-8 rounded-[32px] bg-zinc-950 border border-blue-500/10 flex gap-4"
+                >
+                    <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/10 shrink-0 self-start">
+                        <Sparkles className="w-4 h-4 text-blue-500" />
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600">AI Insight</p>
+                        <p className="text-sm text-zinc-300 leading-relaxed font-medium">
+                            {insight}
+                        </p>
+                    </div>
+                </motion.div>
+
+                {/* Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <StatCard delay={0.1} label="Total Support Requests" value={stats.totalRequests} trend="+12.5%" up icon={<Users className="w-4 h-4" />} />
+                    <StatCard delay={0.15} label="Avg. Healing Time" value={stats.avgHealingTime} trend="-0.4m" up={false} icon={<Clock className="w-4 h-4" />} />
+                    <StatCard delay={0.2} label="CSAT Score" value={stats.csatScore} trend="+2.1%" up icon={<Zap className="w-4 h-4" />} />
+                    <StatCard delay={0.25} label="Drop-Off Rate" value={stats.dropOffRate} trend="+0.3%" up={false} icon={<Activity className="w-4 h-4" />} />
+                </div>
+
                 {/* Customer Call Trends + Issue Clusters */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                     {/* Trend Chart */}
@@ -139,10 +139,26 @@ export default function AdminDashboard() {
                         </div>
                         <div className="h-64 md:h-72 w-full">
                             <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={trendData} margin={{ top: 5, right: 10, bottom: 0, left: -20 }}>
+                                <LineChart data={trendData} margin={{ top: 5, right: 48, bottom: 0, left: -10 }}>
                                     <CartesianGrid stroke="#18181b" strokeDasharray="3 3" />
                                     <XAxis dataKey="time" tick={{ fill: "#52525b", fontSize: 10 }} />
-                                    <YAxis tick={{ fill: "#52525b", fontSize: 10 }} width={40} />
+                                    {/* Left axis — Volume */}
+                                    <YAxis
+                                        yAxisId="vol"
+                                        orientation="left"
+                                        tick={{ fill: "#52525b", fontSize: 10 }}
+                                        width={44}
+                                        tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
+                                    />
+                                    {/* Right axis — Percentage (0–100) */}
+                                    <YAxis
+                                        yAxisId="pct"
+                                        orientation="right"
+                                        domain={[0, 100]}
+                                        tick={{ fill: "#52525b", fontSize: 10 }}
+                                        width={36}
+                                        tickFormatter={(v) => `${v}%`}
+                                    />
                                     <Tooltip
                                         contentStyle={{
                                             backgroundColor: "rgba(0,0,0,0.85)",
@@ -152,10 +168,13 @@ export default function AdminDashboard() {
                                             fontSize: "12px",
                                             color: "#fff",
                                         }}
+                                        formatter={(value: number, name: string) =>
+                                            name === "Volume" ? [value.toLocaleString(), name] : [`${value}%`, name]
+                                        }
                                     />
-                                    <Line type="monotone" dataKey="resolution" stroke="#3b82f6" strokeWidth={2.5} dot={false} name="Resolution %" />
-                                    <Line type="monotone" dataKey="volume" stroke="#10b981" strokeWidth={2} dot={false} strokeDasharray="5 4" name="Volume" />
-                                    <Line type="monotone" dataKey="escalation" stroke="#f59e0b" strokeWidth={2} dot={false} strokeDasharray="3 3" name="Escalation %" />
+                                    <Line yAxisId="pct" type="monotone" dataKey="resolution" stroke="#3b82f6" strokeWidth={2.5} dot={false} name="Resolution %" />
+                                    <Line yAxisId="vol" type="monotone" dataKey="volume"     stroke="#10b981" strokeWidth={2}   dot={false} strokeDasharray="5 4" name="Volume" />
+                                    <Line yAxisId="pct" type="monotone" dataKey="escalation" stroke="#f59e0b" strokeWidth={2}   dot={false} strokeDasharray="3 3" name="Escalation %" />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
@@ -170,7 +189,7 @@ export default function AdminDashboard() {
                     >
                         <h3 className="text-lg font-bold text-white mb-6">Issue Clusters</h3>
                         <div className="space-y-4 flex-1">
-                            {TOP_ISSUES.slice(0, 6).map((issue, idx) => (
+                            {clusters.map((issue, idx) => (
                                 <div key={issue.name} className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-white/[0.03] transition-all group">
                                     <div className="space-y-1">
                                         <p className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors capitalize">{issue.name}</p>
@@ -180,10 +199,10 @@ export default function AdminDashboard() {
                                         <p className="text-xs font-black text-white tabular-nums">{issue.count.toLocaleString()}</p>
                                         <div className="w-20 h-1 bg-zinc-900 rounded-full mt-1.5 overflow-hidden">
                                             <motion.div
+                                                key={`${dateRange}-${channel}-${idx}`}
                                                 initial={{ width: 0 }}
-                                                whileInView={{ width: `${(issue.count / TOP_ISSUES[0].count) * 100}%` }}
-                                                viewport={{ once: true }}
-                                                transition={{ delay: 0.5 + idx * 0.1, duration: 1 }}
+                                                animate={{ width: `${(issue.count / clusters[0].count) * 100}%` }}
+                                                transition={{ delay: idx * 0.08, duration: 0.8, ease: "easeOut" }}
                                                 className="h-full bg-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
                                             />
                                         </div>
@@ -225,7 +244,7 @@ export default function AdminDashboard() {
                 </motion.div>
 
                 {/* Efficiency Banner */}
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -247,7 +266,7 @@ export default function AdminDashboard() {
                             <MetricRing label="CSAT Delta" value={14} color="#10b981" prefix="+" />
                         </div>
                     </div>
-                </motion.div>
+                </motion.div> */}
 
                 {/* Follow-up Input */}
                 <motion.div
