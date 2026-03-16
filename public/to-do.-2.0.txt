@@ -1,0 +1,457 @@
+Below is a **high-quality prompt you can give to Antigravity (AI website/app builder)** to generate the **complete Next.js 16 application architecture and UI** for your system.
+
+The prompt is written so the tool understands:
+
+* product vision
+* UI structure
+* features
+* tech stack
+* pages
+* components
+* dashboards
+* dummy data for demo
+
+This will produce a **production-level enterprise demo system**.
+
+---
+
+# Prompt for Antigravity
+
+Build a **modern enterprise-grade web application** using **Next.js 16 (App Router)** for an **AI-Powered Enterprise Customer Support Platform**.
+
+The goal is to create a **visually impressive, scalable demo application** that showcases how AI can replace expensive human customer support operations.
+
+This application should include **two main interfaces**:
+
+1. Customer Interface
+2. Admin Analytics Dashboard
+
+The system should simulate how AI agents resolve customer issues automatically and provide analytics insights to enterprises.
+
+The UI must be **clean, modern, enterprise-grade, and easy to use for non-technical users**.
+
+Use **TypeScript, TailwindCSS, and modern component architecture**.
+
+---
+
+# Tech Stack Requirements
+
+Use the following stack:
+
+Next.js 16 (App Router)
+
+TypeScript
+
+TailwindCSS
+
+ShadCN UI components
+
+Recharts (for charts)
+
+Framer Motion (for smooth animations)
+
+Lucide icons
+
+React Query or server actions for data fetching
+
+Use **dummy data for analytics simulation**.
+
+---
+
+# Overall Product Concept
+
+This platform demonstrates how enterprises can reduce customer support costs by using **AI agents instead of human support representatives**.
+
+Typical enterprises receive **20,000–30,000 support calls per month**.
+
+Each call costs approximately **$18**.
+
+Monthly support costs can reach **$360,000 – $540,000**.
+
+The AI system automatically resolves common issues such as:
+
+Payment completed but order not created
+
+Card payment failures
+
+Refund status queries
+
+Login issues
+
+OTP failures
+
+Delivery tracking problems
+
+Checkout errors
+
+Only complex cases should escalate to human support.
+
+---
+
+# Application Structure
+
+Create the following folder structure.
+
+app/
+app/customer
+app/admin
+app/admin/dashboard
+app/admin/issues
+app/admin/analytics
+app/admin/alerts
+
+components/
+components/ui
+components/chat
+components/dashboard
+components/charts
+
+lib/
+lib/mockData
+lib/utils
+
+---
+
+# Landing Page
+
+Create a **beautiful landing page** explaining the platform.
+
+Sections:
+
+Hero section
+
+Title:
+
+AI-Powered Enterprise Customer Support
+
+Subtitle:
+
+Reduce support costs by up to 80% using intelligent AI agents.
+
+CTA buttons:
+
+Try Customer Demo
+
+View Admin Dashboard
+
+Features Section
+
+AI Issue Resolution
+
+Voice Support
+
+Real-Time Issue Insights
+
+Automated Problem Detection
+
+Enterprise Analytics
+
+Impact Section
+
+Display stats:
+
+30,000 support calls per month
+
+$18 per call
+
+$540,000 monthly cost
+
+Then show:
+
+AI Support Cost → drastically reduced.
+
+Architecture Overview Section
+
+Explain:
+
+AI Agents
+
+Issue Detection
+
+Voice Interaction
+
+Real-Time Analytics
+
+---
+
+# Customer Interface
+
+Route:
+
+/customer
+
+This page simulates how customers interact with the AI support system.
+
+Design a **chat interface similar to ChatGPT**.
+
+Features:
+
+Chat window
+
+User input box
+
+AI response simulation
+
+Suggested quick issues:
+
+Payment failed
+
+Order not confirmed
+
+Refund status
+
+Login problem
+
+Delivery tracking
+
+Checkout error
+
+Simulated AI responses.
+
+Example interaction:
+
+User:
+"My payment was completed but order was not created."
+
+AI Response:
+
+"I see that your payment was successful but the order confirmation is delayed. This usually happens due to temporary network synchronization issues. Please wait 2 minutes or refresh your order page."
+
+Add **typing animation**.
+
+Add **resolution status indicator**:
+
+Resolved automatically
+
+Escalated to human support
+
+---
+
+# Voice Interaction Section
+
+Add a **voice interaction UI panel**.
+
+Display:
+
+Microphone button
+
+Voice waveform animation
+
+Simulated speech recognition.
+
+Show text:
+
+Voice powered by Speech-to-Text.
+
+AI response using Text-to-Speech.
+
+---
+
+# Admin Dashboard
+
+Route:
+
+/admin/dashboard
+
+Create a **modern analytics dashboard**.
+
+This dashboard shows insights generated from support conversations.
+
+Use **cards and charts**.
+
+Metrics cards:
+
+Total Support Requests
+
+Average Healing Time
+
+Customer Satisfaction Score (CSAT)
+
+Drop-Off Rate
+
+Example values:
+
+Support Requests: 28,431
+
+Average Healing Time: 2.3 minutes
+
+CSAT Score: 92%
+
+Drop-Off Rate: 11%
+
+---
+
+# Top Customer Issues Chart
+
+Create a **bar chart** showing top 10 issues.
+
+Payment Failed
+
+Order Not Confirmed
+
+Refund Delay
+
+Card Declined
+
+OTP Not Received
+
+Delivery Tracking Issue
+
+Checkout Error
+
+Login Problem
+
+App Crash
+
+Coupon Not Applied
+
+---
+
+# Issue Trend Chart
+
+Create a **time series chart**.
+
+Show issue volume over time.
+
+Detect spikes.
+
+Example insight:
+
+Payment Failures increased in the last 2 hours.
+
+---
+
+# Issue Insights Page
+
+Route:
+
+/admin/issues
+
+Create a table showing clustered issues.
+
+Columns:
+
+Issue Type
+
+Frequency
+
+Average Resolution Time
+
+Status
+
+Example rows:
+
+Payment Failure | 8,400 | 2 min | Resolved automatically
+
+Refund Delay | 2,300 | 5 min | Escalated
+
+Login Issue | 1,900 | 1 min | Resolved automatically
+
+---
+
+# Alerts Page
+
+Route:
+
+/admin/alerts
+
+Add a **real-time alert panel**.
+
+Display a red banner.
+
+Example alert:
+
+⚠ Payment Failures Spiking — 300% increase detected in the last 20 minutes.
+
+Also show:
+
+System alerts list
+
+Severity levels:
+
+Critical
+
+Warning
+
+Info
+
+---
+
+# Analytics Page
+
+Route:
+
+/admin/analytics
+
+Create advanced analytics visualizations.
+
+Charts:
+
+Issue distribution pie chart
+
+Resolution time distribution
+
+Customer satisfaction trend
+
+Support automation success rate
+
+Example automation metric:
+
+AI resolved: 78%
+
+Human escalation: 22%
+
+---
+
+# UI Design Requirements
+
+Design should look like a **modern SaaS product**.
+
+Use:
+
+Soft gradients
+
+Glassmorphism cards
+
+Smooth hover effects
+
+Animated charts
+
+Framer Motion transitions
+
+The dashboard must look like a **premium enterprise analytics platform similar to Stripe or Linear**.
+
+---
+
+# Demo Data Simulation
+
+Create a mock dataset generator that simulates:
+
+30k monthly support requests
+
+Issue categories
+
+Resolution times
+
+Escalation percentages
+
+Customer satisfaction ratings
+
+---
+
+# Final Goal
+
+The application should visually demonstrate how an **AI-powered customer support system** can:
+
+Automatically resolve most customer issues
+
+Provide real-time insights into support problems
+
+Detect spikes in system failures
+
+Reduce enterprise support costs drastically
+
+The focus is **clarity, usability, and enterprise-level product design**.
+
+---
+
