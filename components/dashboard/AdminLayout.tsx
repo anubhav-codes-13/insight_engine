@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, MessageSquare, PieChart, Bell, Home, Settings, LogOut, Menu, X, Monitor } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Home, Settings, LogOut, Menu, X, Monitor } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
@@ -52,10 +52,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 <nav className="flex-1 space-y-1">
                     <NavItem href="/admin/dashboard" icon={<LayoutDashboard className="w-4 h-4" />} label="Overview" active={pathname === "/admin/dashboard"} />
+                    <NavItem href="/admin/monitoring" icon={<Monitor className="w-4 h-4" />} label="L1 Deepdive" active={pathname === "/admin/monitoring"} />
                     <NavItem href="/admin/issues" icon={<MessageSquare className="w-4 h-4" />} label="Issue Insights" active={pathname === "/admin/issues"} />
-                    <NavItem href="/admin/analytics" icon={<PieChart className="w-4 h-4" />} label="Analytics" active={pathname === "/admin/analytics"} />
-                    <NavItem href="/admin/alerts" icon={<Bell className="w-4 h-4" />} label="Alerts" active={pathname === "/admin/alerts"} badge="2" />
-                    <NavItem href="/admin/monitoring" icon={<Monitor className="w-4 h-4" />} label="Monitoring" active={pathname === "/admin/monitoring"} />
+                    {/* <NavItem href="/admin/analytics" icon={<PieChart className="w-4 h-4" />} label="Analytics" active={pathname === "/admin/analytics"} /> */}
+                    {/* <NavItem href="/admin/alerts" icon={<Bell className="w-4 h-4" />} label="Alerts" active={pathname === "/admin/alerts"} badge="2" /> */}
                 </nav>
 
                 <div className="mt-auto space-y-1 pt-6 border-t border-white/5">

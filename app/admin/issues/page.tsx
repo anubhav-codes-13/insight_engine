@@ -203,7 +203,7 @@ export default function IssueInsights() {
                 </motion.div>
 
                 {/* Insight Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
                     <InsightCard
                         title="Gateway Anomaly"
                         content="A 12% increase in HDFC bank declines was detected in the last hour. AI Agents are currently routing traffic to backup nodes."
@@ -222,7 +222,7 @@ export default function IssueInsights() {
                         severity="info"
                         delay={0.3}
                     />
-                </div>
+                </div> */}
             </div>
         </AdminLayout>
     );
