@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import AdminLayout from "@/components/dashboard/AdminLayout";
-import { CLUSTER_DATA, CHANNEL_TRENDS, CHANNEL_STATS, AI_INSIGHTS, TOP_TOPICS } from "@/lib/mockData";
+import { CLUSTER_DATA, CHANNEL_TRENDS, CHANNEL_STATS, AI_INSIGHTS } from "@/lib/mockData";
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
     ArrowUpRight, ArrowDownRight, Activity, Users, Zap, Clock,
@@ -15,6 +15,19 @@ import { motion } from "framer-motion";
 
 type DateRange = "24h" | "7d" | "30d";
 type Channel = "All" | "Chat" | "Call" | "Email";
+
+const CLUSTER_META: Record<string, { change: string; up: boolean; spark: number[] }> = {
+    "Payment Failed":    { change: "+19%", up: true,  spark: [38, 42, 40, 45, 50, 55, 58, 62] },
+    "Order Not Created": { change: "-15%", up: false, spark: [60, 56, 52, 50, 46, 44, 42, 40] },
+    "Refund Delay":      { change: "+11%", up: true,  spark: [30, 31, 33, 32, 35, 36, 38, 40] },
+    "Card Declined":     { change: "+22%", up: true,  spark: [28, 30, 32, 36, 38, 42, 46, 50] },
+    "OTP Not Received":  { change: "+12%", up: true,  spark: [20, 21, 22, 22, 23, 24, 25, 26] },
+    "Delivery Tracking": { change: "+8%",  up: true,  spark: [18, 19, 19, 20, 20, 21, 22, 22] },
+    "Checkout Error":    { change: "+42%", up: true,  spark: [12, 16, 20, 26, 32, 38, 44, 50] },
+    "Login Problem":     { change: "-4%",  up: false, spark: [22, 22, 21, 21, 20, 20, 19, 19] },
+    "App Crash":         { change: "+31%", up: true,  spark: [10, 12, 14, 16, 20, 24, 28, 32] },
+    "Coupon Error":      { change: "+6%",  up: true,  spark: [14, 14, 15, 15, 15, 16, 16, 17] },
+};
 
 export default function AdminDashboard() {
     const [dateRange, setDateRange] = useState<DateRange>("7d");
@@ -108,11 +121,12 @@ export default function AdminDashboard() {
                 </motion.div>
 
                 {/* Metric Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                    <StatCard delay={0.1} label="Total Support Requests" value={stats.totalRequests} trend="+12.5%" up icon={<Users className="w-4 h-4" />} />
-                    <StatCard delay={0.15} label="Avg. Healing Time" value={stats.avgHealingTime} trend="-0.4m" up={false} icon={<Clock className="w-4 h-4" />} />
-                    <StatCard delay={0.2} label="CSAT Score" value={stats.csatScore} trend="+2.1%" up icon={<Zap className="w-4 h-4" />} />
-                    <StatCard delay={0.25} label="Drop-Off Rate" value={stats.dropOffRate} trend="+0.3%" up={false} icon={<Activity className="w-4 h-4" />} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
+                    <StatCard delay={0.1}  label="Total Support Requests" value={stats.totalRequests}  trend="+12.5%" up           icon={<Users className="w-4 h-4" />} />
+                    <StatCard delay={0.13} label="Resolution Rate"         value={stats.resolutionRate} trend="+4.2%"  up           icon={<Activity className="w-4 h-4" />} />
+                    <StatCard delay={0.16} label="Avg. Healing Time"       value={stats.avgHealingTime} trend="-0.4m"  up={false}   icon={<Clock className="w-4 h-4" />} />
+                    <StatCard delay={0.19} label="CSAT Score"              value={stats.csatScore}      trend="+2.1%"  up           icon={<Zap className="w-4 h-4" />} />
+                    <StatCard delay={0.22} label="Drop-Off Rate"           value={stats.dropOffRate}    trend="+0.3%"  up={false}   icon={<Activity className="w-4 h-4" />} />
                 </div>
 
                 {/* Customer Call Trends + Issue Clusters */}
@@ -168,9 +182,12 @@ export default function AdminDashboard() {
                                             fontSize: "12px",
                                             color: "#fff",
                                         }}
-                                        formatter={(value: number, name: string) =>
-                                            name === "Volume" ? [value.toLocaleString(), name] : [`${value}%`, name]
-                                        }
+                                        formatter={(value, name) => {
+                                            if (value == null) return ["—", name as string];
+                                            return name === "Volume"
+                                                ? [Number(value).toLocaleString(), name as string]
+                                                : [`${value}%`, name as string];
+                                        }}
                                     />
                                     <Line yAxisId="pct" type="monotone" dataKey="resolution" stroke="#3b82f6" strokeWidth={2.5} dot={false} name="Resolution %" />
                                     <Line yAxisId="vol" type="monotone" dataKey="volume"     stroke="#10b981" strokeWidth={2}   dot={false} strokeDasharray="5 4" name="Volume" />
@@ -187,61 +204,53 @@ export default function AdminDashboard() {
                         transition={{ delay: 0.45 }}
                         className="p-6 md:p-8 rounded-[32px] bg-zinc-950 border border-white/5 flex flex-col"
                     >
-                        <h3 className="text-lg font-bold text-white mb-6">Issue Clusters</h3>
-                        <div className="space-y-4 flex-1">
-                            {clusters.map((issue, idx) => (
-                                <div key={issue.name} className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-white/[0.03] transition-all group">
-                                    <div className="space-y-1">
-                                        <p className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors capitalize">{issue.name}</p>
-                                        <p className="text-[10px] text-zinc-500 font-medium">Auto-Healed in {issue.healingTime}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs font-black text-white tabular-nums">{issue.count.toLocaleString()}</p>
-                                        <div className="w-20 h-1 bg-zinc-900 rounded-full mt-1.5 overflow-hidden">
-                                            <motion.div
-                                                key={`${dateRange}-${channel}-${idx}`}
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${(issue.count / clusters[0].count) * 100}%` }}
-                                                transition={{ delay: idx * 0.08, duration: 0.8, ease: "easeOut" }}
-                                                className="h-full bg-blue-600 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
-                                            />
+                        <h3 className="text-lg font-bold text-white mb-4">Issue Clusters</h3>
+                        {/* Column Headers */}
+                        <div className="flex items-center justify-between px-3.5 pb-2 border-b border-white/5 mb-1">
+                            <span className="text-[10px] uppercase tracking-[0.15em] font-black text-zinc-600 flex-1">Topic</span>
+                            <div className="flex items-center gap-3 shrink-0">
+                                <span className="text-[10px] uppercase tracking-[0.15em] font-black text-zinc-600 w-12 text-right">Volume</span>
+                                <span className="text-[10px] uppercase tracking-[0.15em] font-black text-zinc-600 w-12 text-right">Change</span>
+                                <span className="text-[10px] uppercase tracking-[0.15em] font-black text-zinc-600 w-16 text-center">Trend</span>
+                            </div>
+                        </div>
+                        <div className="space-y-1 flex-1">
+                            {clusters.map((issue) => {
+                                const meta = CLUSTER_META[issue.name] ?? { change: "+0%", up: true, spark: [10, 10, 10, 10, 10, 10, 10, 10] };
+                                const sparkData = meta.spark.map((v) => ({ v }));
+                                return (
+                                    <div key={issue.name} className="flex items-center justify-between px-3.5 py-3 rounded-2xl hover:bg-white/[0.03] transition-all group">
+                                        <div className="space-y-0.5 flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors truncate">{issue.name}</p>
+                                            <p className="text-[10px] text-zinc-600 font-medium">Auto-Healed in {issue.healingTime}</p>
+                                        </div>
+                                        <div className="flex items-center gap-3 shrink-0">
+                                            <p className="text-sm font-black text-emerald-400 tabular-nums">{issue.count.toLocaleString()}</p>
+                                            <span className={`text-[11px] font-bold tabular-nums w-12 text-right ${meta.up ? "text-emerald-400" : "text-zinc-500"}`}>
+                                                {meta.change}
+                                            </span>
+                                            <div className="w-16 h-8 shrink-0">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <LineChart data={sparkData} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+                                                        <Line
+                                                            type="monotone"
+                                                            dataKey="v"
+                                                            stroke={meta.up ? "#34d399" : "#71717a"}
+                                                            strokeWidth={1.5}
+                                                            dot={false}
+                                                            isAnimationActive={false}
+                                                        />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </motion.div>
                 </div>
 
-                {/* Top Topics */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 }}
-                    className="p-6 md:p-8 rounded-[32px] bg-zinc-950 border border-white/5 space-y-6"
-                >
-                    <h3 className="text-lg font-bold text-white">Top Topics</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                        {TOP_TOPICS.map((t, i) => (
-                            <div key={t.topic} className="space-y-1.5">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-bold text-zinc-300">{t.topic}</span>
-                                    <span className="text-xs font-black text-white tabular-nums">{t.volume.toLocaleString()}</span>
-                                </div>
-                                <div className="h-1.5 bg-zinc-900 rounded-full overflow-hidden">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        whileInView={{ width: `${t.share}%` }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: 0.15 + i * 0.06, duration: 0.9, ease: "easeOut" }}
-                                        className="h-full bg-blue-600 rounded-full"
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </motion.div>
 
                 {/* Efficiency Banner */}
                 {/* <motion.div
@@ -323,25 +332,3 @@ function StatCard({ label, value, trend, up, icon, delay }: { label: string; val
     );
 }
 
-function MetricRing({ label, value, color, prefix = "" }: { label: string; value: number; color: string; prefix?: string }) {
-    return (
-        <div className="text-center group">
-            <p className="text-[10px] uppercase font-black tracking-widest text-zinc-500 mb-4 group-hover:text-white transition-colors">{label}</p>
-            <div className="relative w-28 h-28 flex items-center justify-center">
-                <svg className="w-full h-full -rotate-90">
-                    <circle cx="56" cy="56" r="50" fill="none" stroke="#18181b" strokeWidth="8" />
-                    <motion.circle
-                        initial={{ strokeDashoffset: 314 }}
-                        whileInView={{ strokeDashoffset: 314 * (1 - value / 100) }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
-                        cx="56" cy="56" r="50" fill="none" stroke={color} strokeWidth="8"
-                        strokeDasharray={314}
-                        strokeLinecap="round"
-                    />
-                </svg>
-                <span className="absolute text-xl font-black text-white">{prefix}{value}%</span>
-            </div>
-        </div>
-    );
-}

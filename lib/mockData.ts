@@ -136,6 +136,7 @@ export const ANALYTICS_STATS = {
     dropOffRate: "11%",
     automationRate: 78,
     humanEscalation: 22,
+    resolutionRate: "83%",
 };
 
 // --- Overview Screen ---
@@ -255,10 +256,10 @@ export const CALL_TRENDS_7D  = CHANNEL_TRENDS["7d"].All;
 export const CALL_TRENDS_30D = CHANNEL_TRENDS["30d"].All;
 
 export const CHANNEL_STATS: Record<string, typeof ANALYTICS_STATS> = {
-    All:   { totalRequests: "28,431", avgHealingTime: "2.3 min", csatScore: "92%", dropOffRate: "11%", automationRate: 78, humanEscalation: 22 },
-    Chat:  { totalRequests: "15,637", avgHealingTime: "1.8 min", csatScore: "94%", dropOffRate: "8%",  automationRate: 85, humanEscalation: 15 },
-    Call:  { totalRequests: "8,529",  avgHealingTime: "3.1 min", csatScore: "88%", dropOffRate: "16%", automationRate: 66, humanEscalation: 34 },
-    Email: { totalRequests: "4,265",  avgHealingTime: "4.6 min", csatScore: "85%", dropOffRate: "19%", automationRate: 55, humanEscalation: 45 },
+    All:   { totalRequests: "28,431", avgHealingTime: "2.3 min", csatScore: "92%", dropOffRate: "11%", automationRate: 78, humanEscalation: 22, resolutionRate: "83%" },
+    Chat:  { totalRequests: "15,637", avgHealingTime: "1.8 min", csatScore: "94%", dropOffRate: "8%",  automationRate: 85, humanEscalation: 15, resolutionRate: "91%" },
+    Call:  { totalRequests: "8,529",  avgHealingTime: "3.1 min", csatScore: "88%", dropOffRate: "16%", automationRate: 66, humanEscalation: 34, resolutionRate: "71%" },
+    Email: { totalRequests: "4,265",  avgHealingTime: "4.6 min", csatScore: "85%", dropOffRate: "19%", automationRate: 55, humanEscalation: 45, resolutionRate: "56%" },
 };
 
 export const AI_INSIGHTS: Record<string, Record<string, string>> = {
