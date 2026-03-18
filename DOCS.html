@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Insight Engine — Documentation</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+
+    :root{
+      --bg:#0a0e1a;
+      --surface:#111827;
+      --card:#1a2236;
+      --card2:#151e2f;
+      --border:#1e3a5f;
+      --accent:#3b82f6;
+      --accent2:#8b5cf6;
+      --green:#10b981;
+      --yellow:#f59e0b;
+      --red:#ef4444;
+      --pink:#ec4899;
+      --cyan:#06b6d4;
+      --text:#e2e8f0;
+      --muted:#64748b;
+      --code-bg:#0d1117;
+    }
+
+    html{scroll-behavior:smooth;}
+
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar{width:6px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+    /* ══════════════════ SIDEBAR NAV ══════════════════ */
+    .layout{display:flex;min-height:100vh;}
+
+    .sidebar{
+      width:260px;
+      flex-shrink:0;
+      background:var(--surface);
+      border-right:1px solid var(--border);
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow-y:auto;
+      padding:28px 0 40px;
+      display:flex;
+      flex-direction:column;
+    }
+    .sidebar-logo{
+      padding:0 20px 24px;
+      border-bottom:1px solid var(--border);
+      margin-bottom:16px;
+    }
+    .sidebar-logo .brand{
+      font-size:15px;
+      font-weight:800;
+      background:linear-gradient(135deg,#93c5fd,#c4b5fd);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .sidebar-logo .sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+    .nav-group{margin-bottom:8px;}
+    .nav-group-label{
+      font-size:10px;
+      font-weight:700;
+      letter-spacing:1.5px;
+      text-transform:uppercase;
+      color:var(--muted);
+      padding:6px 20px;
+    }
+    .nav-link{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 20px;
+      font-size:13px;
+      color:#94a3b8;
+      text-decoration:none;
+      border-left:2px solid transparent;
+      transition:all .2s;
+      cursor:pointer;
+    }
+    .nav-link:hover{color:var(--text);background:rgba(255,255,255,.03);}
+    .nav-link.active{color:#93c5fd;border-left-color:var(--accent);background:rgba(59,130,246,.06);}
+    .nav-link .nav-dot{
+      width:6px;height:6px;
+      border-radius:50%;
+      background:var(--border);
+      flex-shrink:0;
+    }
+    .nav-link.active .nav-dot{background:var(--accent);}
+
+    .sidebar-footer{
+      margin-top:auto;
+      padding:16px 20px 0;
+      border-top:1px solid var(--border);
+    }
+    .status-pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:#34d399;
+    }
+    .status-dot{
+      width:7px;height:7px;
+      background:var(--green);
+      border-radius:50%;
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.6);}
+      50%{box-shadow:0 0 0 5px rgba(16,185,129,0);}
+    }
+
+    /* ══════════════════ MAIN ══════════════════ */
+    .main{flex:1;min-width:0;}
+
+    /* ── HERO ── */
+    .hero{
+      position:relative;
+      padding:72px 48px 56px;
+      overflow:hidden;
+      border-bottom:1px solid var(--border);
+    }
+    .hero::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(ellipse 70% 60% at 60% 0%,rgba(59,130,246,.15) 0%,transparent 70%),
+        radial-gradient(ellipse 40% 40% at 90% 60%,rgba(139,92,246,.1) 0%,transparent 60%);
+      pointer-events:none;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(59,130,246,.1);
+      border:1px solid rgba(59,130,246,.3);
+      border-radius:999px;
+      padding:5px 16px;
+      font-size:12px;
+      color:#93c5fd;
+      margin-bottom:24px;
+      letter-spacing:.5px;
+    }
+    .hero h1{
+      font-size:clamp(2rem,4vw,3rem);
+      font-weight:800;
+      line-height:1.15;
+      background:linear-gradient(135deg,#e2e8f0 20%,#93c5fd 60%,#c4b5fd 100%);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      background-clip:text;
+      margin-bottom:14px;
+    }
+    .hero p{
+      font-size:1.05rem;
+      color:var(--muted);
+      max-width:600px;
+      line-height:1.75;
+      margin-bottom:32px;
+    }
+    .hero-pills{display:flex;flex-wrap:wrap;gap:10px;}
+    .hpill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:5px 14px;
+      font-size:12px;
+      color:#94a3b8;
+    }
+    .hpill .dot{width:6px;height:6px;border-radius:50%;}
+    .dot-blue{background:#3b82f6;}
+    .dot-green{background:#10b981;}
+    .dot-purple{background:#8b5cf6;}
+    .dot-yellow{background:#f59e0b;}
+
+    /* ── CONTENT SECTIONS ── */
+    .content{padding:0 48px 80px;}
+
+    .section{padding-top:56px;}
+
+    .section-label{
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      color:var(--accent);
+      margin-bottom:20px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .section-label::after{
+      content:'';flex:1;height:1px;
+      background:linear-gradient(to right,var(--border),transparent);
+    }
+
+    .section-title{
+      font-size:1.5rem;
+      font-weight:700;
+      color:var(--text);
+      margin-bottom:8px;
+    }
+    .section-desc{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.7;
+      margin-bottom:24px;
+      max-width:680px;
+    }
+
+    /* ── CARDS ── */
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      margin-bottom:16px;
+      transition:border-color .25s,box-shadow .25s;
+    }
+    .card:hover{
+      border-color:rgba(59,130,246,.35);
+      box-shadow:0 0 0 1px rgba(59,130,246,.1),0 8px 28px rgba(0,0,0,.35);
+    }
+    .card-header{
+      display:flex;align-items:center;gap:12px;
+      padding:18px 20px 14px;
+    }
+    .card-icon{
+      width:34px;height:34px;border-radius:9px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:15px;flex-shrink:0;
+    }
+    .ci-blue  {background:rgba(59,130,246,.15);}
+    .ci-purple{background:rgba(139,92,246,.15);}
+    .ci-green {background:rgba(16,185,129,.15);}
+    .ci-yellow{background:rgba(245,158,11,.15);}
+    .ci-pink  {background:rgba(236,72,153,.15);}
+    .ci-cyan  {background:rgba(6,182,212,.15);}
+
+    .card-title{font-size:15px;font-weight:700;color:var(--text);}
+    .card-sub  {font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5;}
+    .card-body {padding:0 20px 20px;}
+
+    /* ── CODE BLOCK ── */
+    .code-block{
+      background:var(--code-bg);
+      border:1px solid #1e2d3d;
+      border-radius:10px;
+      overflow:hidden;
+      margin-top:8px;
+    }
+    .code-bar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:7px 14px;
+      background:#161b27;
+      border-bottom:1px solid #1e2d3d;
+    }
+    .code-bar span{font-size:11px;color:var(--muted);font-family:monospace;}
+    .copy-btn{
+      background:none;border:1px solid #1e3a5f;border-radius:5px;
+      color:var(--muted);font-size:11px;padding:2px 10px;cursor:pointer;
+      transition:all .2s;
+    }
+    .copy-btn:hover{background:rgba(59,130,246,.1);color:#60a5fa;border-color:var(--accent);}
+    .copy-btn.copied{color:var(--green);border-color:var(--green);}
+    pre{
+      padding:16px;overflow-x:auto;
+      font-family:'Cascadia Code','Fira Code','Consolas',monospace;
+      font-size:12.5px;line-height:1.75;color:#cdd9e5;
+    }
+    .c-blue  {color:#79c0ff;}
+    .c-orange{color:#ffab70;}
+    .c-green {color:#56d364;}
+    .c-yellow{color:#e3b341;}
+    .c-purple{color:#d2a8ff;}
+    .c-pink  {color:#f0abfc;}
+    .c-str   {color:#a5d6ff;}
+    .c-dim   {color:#8b949e;font-style:italic;}
+    .c-key   {color:#f0abfc;}
+    .c-val   {color:#79c0ff;}
+    .c-num   {color:#79c0ff;}
+
+    /* ── TABLES ── */
+    .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);margin-top:8px;}
+    table{width:100%;border-collapse:collapse;font-size:13px;}
+    thead th{
+      text-align:left;padding:11px 14px;
+      color:var(--muted);font-size:11px;font-weight:700;
+      text-transform:uppercase;letter-spacing:1px;
+      background:rgba(255,255,255,.02);
+      border-bottom:1px solid var(--border);
+      white-space:nowrap;
+    }
+    tbody td{padding:11px 14px;border-bottom:1px solid #1a2840;vertical-align:top;line-height:1.5;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:rgba(255,255,255,.02);}
+    .mono{font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:12px;}
+    .t-pink  {color:#f0abfc;}
+    .t-yellow{color:#fbbf24;}
+    .t-green {color:#86efac;}
+    .t-blue  {color:#93c5fd;}
+    .t-dim   {color:var(--muted);}
+
+    /* ── TYPE CHIPS ── */
+    .type-chip{
+      display:inline-block;border-radius:5px;padding:2px 8px;
+      font-size:11px;font-family:monospace;font-weight:600;
+    }
+    .tc-str {background:rgba(134,239,172,.1);color:#86efac;border:1px solid rgba(134,239,172,.2);}
+    .tc-bool{background:rgba(250,191,36,.1);color:#fbbf24;border:1px solid rgba(250,191,36,.2);}
+    .tc-int {background:rgba(147,197,253,.1);color:#93c5fd;border:1px solid rgba(147,197,253,.2);}
+    .tc-dt  {background:rgba(196,181,253,.1);color:#c4b5fd;border:1px solid rgba(196,181,253,.2);}
+    .tc-df  {background:rgba(6,182,212,.1);color:#67e8f9;border:1px solid rgba(6,182,212,.2);}
+    .tc-dict{background:rgba(249,115,22,.1);color:#fdba74;border:1px solid rgba(249,115,22,.2);}
+    .tc-list{background:rgba(236,72,153,.1);color:#f9a8d4;border:1px solid rgba(236,72,153,.2);}
+
+    /* ── FUNC CARDS ── */
+    .func-card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:14px;overflow:hidden;margin-bottom:20px;
+      transition:border-color .25s,box-shadow .25s;
+    }
+    .func-card:hover{
+      border-color:rgba(139,92,246,.4);
+      box-shadow:0 0 0 1px rgba(139,92,246,.1),0 8px 28px rgba(0,0,0,.3);
+    }
+    .func-header{
+      display:flex;align-items:flex-start;gap:14px;
+      padding:20px 22px 16px;
+      border-bottom:1px solid var(--border);
+      background:rgba(139,92,246,.03);
+    }
+    .func-name-badge{
+      background:rgba(139,92,246,.15);
+      border:1px solid rgba(139,92,246,.3);
+      border-radius:8px;
+      padding:6px 14px;
+      font-family:monospace;
+      font-size:14px;
+      font-weight:700;
+      color:#c4b5fd;
+      white-space:nowrap;
+    }
+    .func-desc{font-size:13px;color:#94a3b8;line-height:1.65;padding-top:4px;}
+    .func-body{padding:20px 22px;}
+    .io-label{
+      font-size:10px;font-weight:700;letter-spacing:1.5px;
+      text-transform:uppercase;
+      margin-bottom:10px;margin-top:18px;
+    }
+    .io-label:first-child{margin-top:0;}
+    .io-label.input {color:#60a5fa;}
+    .io-label.output{color:#34d399;}
+    .note{
+      display:flex;align-items:flex-start;gap:8px;
+      background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);
+      border-radius:8px;padding:10px 14px;
+      font-size:12px;color:#fde68a;margin-top:12px;line-height:1.6;
+    }
+    .note-icon{flex-shrink:0;margin-top:1px;}
+
+    /* ── INLINE CODE ── */
+    code{
+      font-family:'Cascadia Code','Fira Code','Consolas',monospace;
+      font-size:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:4px;padding:1px 6px;color:#c4b5fd;
+    }
+
+    /* ── FILE TABLE ── */
+    .file-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+      gap:10px;margin-top:4px;
+    }
+    .file-item{
+      background:var(--code-bg);border:1px solid #1e2d3d;border-radius:9px;
+      padding:12px 14px;display:flex;align-items:flex-start;gap:10px;
+    }
+    .file-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+    .file-name{font-family:monospace;font-size:12px;color:#93c5fd;}
+    .file-desc{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4;}
+
+    /* ── INFO CHIPS ── */
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+    .chip{
+      display:inline-flex;align-items:center;gap:5px;
+      border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;
+    }
+    .chip-green {background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.25);}
+    .chip-blue  {background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.25);}
+    .chip-purple{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.25);}
+    .chip-yellow{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25);}
+
+    /* ── METHOD BADGE ── */
+    .method-badge{
+      background:rgba(16,185,129,.15);color:#34d399;
+      border:1px solid rgba(16,185,129,.3);border-radius:6px;
+      padding:4px 12px;font-size:12px;font-weight:800;
+      font-family:monospace;letter-spacing:1px;
+    }
+    .url-text{
+      font-family:monospace;font-size:13px;color:#93c5fd;
+      background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
+      border-radius:7px;padding:5px 12px;word-break:break-all;
+    }
+    .endpoint-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+
+    /* ── RESPONSE CHIPS ── */
+    .resp-ok {
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(16,185,129,.1);color:#34d399;
+      border:1px solid rgba(16,185,129,.3);border-radius:6px;
+      padding:4px 12px;font-size:12px;font-weight:700;font-family:monospace;
+    }
+    .resp-err{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(239,68,68,.1);color:#f87171;
+      border:1px solid rgba(239,68,68,.3);border-radius:6px;
+      padding:4px 12px;font-size:12px;font-weight:700;font-family:monospace;
+    }
+
+    /* ── PIPELINE STEPS ── */
+    .pipeline{display:flex;flex-direction:column;gap:0;margin-top:4px;}
+    .pipe-step{
+      display:flex;align-items:flex-start;gap:16px;
+      padding:14px 0;
+    }
+    .pipe-step:not(:last-child){border-bottom:1px solid var(--border);}
+    .pipe-num{
+      width:28px;height:28px;border-radius:8px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:800;flex-shrink:0;
+      background:rgba(59,130,246,.15);color:#60a5fa;
+    }
+    .pipe-text{font-size:13px;color:#94a3b8;line-height:1.6;padding-top:4px;}
+    .pipe-text code{color:#fbbf24;}
+
+    /* ── STRUCTURE TREE ── */
+    .tree{
+      background:var(--code-bg);border:1px solid #1e2d3d;border-radius:10px;
+      padding:20px;font-family:monospace;font-size:13px;line-height:2;
+    }
+    .tree-dir {color:#60a5fa;}
+    .tree-file{color:#cdd9e5;}
+    .tree-cmt {color:#8b949e;font-style:italic;}
+    .tree-sym {color:var(--muted);}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){
+      .sidebar{display:none;}
+      .hero{padding:48px 24px 40px;}
+      .content{padding:0 24px 60px;}
+    }
+    @media(max-width:500px){
+      .hero{padding:40px 16px 32px;}
+      .content{padding:0 16px 48px;}
+      pre{font-size:11.5px;}
+      .func-header{flex-direction:column;gap:10px;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">Insight Engine</div>
+      <div class="sub">Backend Documentation</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <a class="nav-link active" href="#overview"><span class="nav-dot"></span>Introduction</a>
+      <a class="nav-link" href="#structure"><span class="nav-dot"></span>Project Structure</a>
+      <a class="nav-link" href="#quickstart"><span class="nav-dot"></span>Quick Start</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Data</div>
+      <a class="nav-link" href="#input-data"><span class="nav-dot"></span>Input CSV Schema</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">ETL Pipeline</div>
+      <a class="nav-link" href="#load_data"><span class="nav-dot"></span>load_data</a>
+      <a class="nav-link" href="#filter_data"><span class="nav-dot"></span>filter_data</a>
+      <a class="nav-link" href="#calculate_kpis"><span class="nav-dot"></span>calculate_kpis</a>
+      <a class="nav-link" href="#generate_chart_data"><span class="nav-dot"></span>generate_chart_data</a>
+      <a class="nav-link" href="#get_top_trending"><span class="nav-dot"></span>get_top_trending_topics</a>
+      <a class="nav-link" href="#get_performing"><span class="nav-dot"></span>get_performing_topics</a>
+      <a class="nav-link" href="#get_category"><span class="nav-dot"></span>get_category_metrics</a>
+      <a class="nav-link" href="#get_issues"><span class="nav-dot"></span>get_issues_deep_dive</a>
+      <a class="nav-link" href="#gen_monitoring"><span class="nav-dot"></span>generate_monitoring_data</a>
+      <a class="nav-link" href="#gen_insight"><span class="nav-dot"></span>generate_basic_insight</a>
+      <a class="nav-link" href="#build_payloads"><span class="nav-dot"></span>build_dashboard_payloads</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">API</div>
+      <a class="nav-link" href="#api-setup"><span class="nav-dot"></span>Setup</a>
+      <a class="nav-link" href="#api-endpoint"><span class="nav-dot"></span>GET /api/dashboard</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-group-label">Maintenance</div>
+      <a class="nav-link" href="#regenerate"><span class="nav-dot"></span>Regenerating Output</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="status-pill"><span class="status-dot"></span>API live at :8000</div>
+    </div>
+  </nav>
+
+  <!-- ══════════ MAIN ══════════ -->
+  <main class="main">
+
+    <!-- HERO -->
+    <div class="hero" id="overview">
+      <div class="badge">📄 Full Documentation</div>
+      <h1>Insight Engine<br/>Backend</h1>
+      <p>A Python ETL pipeline that processes customer support case data and serves pre-computed dashboard metrics via a FastAPI REST endpoint.</p>
+      <div class="hero-pills">
+        <span class="hpill"><span class="dot dot-blue"></span>FastAPI</span>
+        <span class="hpill"><span class="dot dot-green"></span>Pandas ETL</span>
+        <span class="hpill"><span class="dot dot-purple"></span>Uvicorn</span>
+        <span class="hpill"><span class="dot dot-yellow"></span>1,000 Cases</span>
+        <span class="hpill"><span class="dot dot-blue"></span>12 JSON Outputs</span>
+        <span class="hpill"><span class="dot dot-green"></span>CORS Enabled</span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ══════════════════════════════════════════════════
+           PROJECT STRUCTURE
+      ══════════════════════════════════════════════════ -->
+      <div class="section" id="structure">
+        <p class="section-label">Project Structure</p>
+        <div class="section-title">File Layout</div>
+        <p class="section-desc">All project files live in a single flat directory alongside the virtual environment.</p>
+
+        <div class="tree">
+<span class="tree-dir">Insight_Engine_Backend/</span>
+<span class="tree-sym">├──</span> <span class="tree-file">case_level_data.csv</span>      <span class="tree-cmt"># Source data (1000 support cases)</span>
+<span class="tree-sym">├──</span> <span class="tree-file">etl_pipeline.py</span>          <span class="tree-cmt"># ETL logic — filtering, metrics, aggregation</span>
+<span class="tree-sym">├──</span> <span class="tree-file">api.py</span>                   <span class="tree-cmt"># FastAPI server — serves pre-computed JSON</span>
+<span class="tree-sym">├──</span> <span class="tree-dir">output/</span>                  <span class="tree-cmt"># 12 pre-computed dashboard JSON files</span>
+<span class="tree-sym">│   ├──</span> <span class="tree-file">dashboard_1d_all.json</span>
+<span class="tree-sym">│   ├──</span> <span class="tree-file">dashboard_7d_chat.json</span>
+<span class="tree-sym">│   └──</span> <span class="tree-cmt">... (3 time windows × 4 channels)</span>
+<span class="tree-sym">├──</span> <span class="tree-dir">venv/</span>                    <span class="tree-cmt"># Python virtual environment</span>
+<span class="tree-sym">└──</span> <span class="tree-file">README.md</span></div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           QUICK START
+      ══════════════════════════════════════════════════ -->
+      <div class="section" id="quickstart">
+        <p class="section-label">Quick Start</p>
+        <div class="section-title">Running the Backend</div>
+        <p class="section-desc">Two commands to get fully operational — run the ETL first, then start the server.</p>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon ci-yellow">⚙️</div>
+            <div>
+              <div class="card-title">Step 1 — Run the ETL pipeline</div>
+              <div class="card-sub">Generates all 12 pre-computed JSON files in <code>output/</code></div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="code-block">
+              <div class="code-bar"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <pre><span class="c-str">venv\Scripts\python.exe</span> etl_pipeline.py</pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon ci-green">🚀</div>
+            <div>
+              <div class="card-title">Step 2 — Start the API server</div>
+              <div class="card-sub">Starts Uvicorn with hot-reload on port 8000</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="code-block">
+              <div class="code-bar"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <pre><span class="c-str">venv\Scripts\python.exe</span> api.py</pre>
+            </div>
+            <div class="chip-row">
+              <span class="chip chip-green">● Live at http://localhost:8000</span>
+              <span class="chip chip-blue">Docs at http://localhost:8000/docs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           INPUT DATA
+      ══════════════════════════════════════════════════ -->
+      <div class="section" id="input-data">
+        <p class="section-label">Input Data</p>
+        <div class="section-title">case_level_data.csv</div>
+        <p class="section-desc">Source CSV containing 1,000 customer support cases. Each row represents a single support interaction with AI-inferred metadata.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Column</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="mono t-pink">case_id</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Unique identifier: <code>Brand_Model_YYYYMMDD_HHMMSS_ID</code></td></tr>
+              <tr><td class="mono t-pink">Case_id</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Duplicate of <code>case_id</code></td></tr>
+              <tr><td class="mono t-pink">text</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Full raw conversation transcript</td></tr>
+              <tr><td class="mono t-pink">conversation_json</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Structured JSON of the conversation</td></tr>
+              <tr><td class="mono t-pink">_cache_key</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Internal processing cache key</td></tr>
+              <tr><td class="mono t-pink">Summary</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">AI-generated case summary</td></tr>
+              <tr><td class="mono t-pink">Reason_of_contact</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Why the customer contacted support</td></tr>
+              <tr><td class="mono t-pink">Issue_Resolved</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether the issue was resolved</td></tr>
+              <tr><td class="mono t-pink">Customer_Dropped</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether the customer dropped the call</td></tr>
+              <tr><td class="mono t-pink">Agent_Dropped</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether the agent dropped the call</td></tr>
+              <tr><td class="mono t-pink">Escalation</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether the case was escalated</td></tr>
+              <tr><td class="mono t-pink">Inferred_CSAT</td><td><span class="type-chip tc-int">int (1–5)</span></td><td class="t-dim">AI-inferred customer satisfaction score</td></tr>
+              <tr><td class="mono t-pink">Customer_Effort_Score_CES</td><td><span class="type-chip tc-int">int (1–5)</span></td><td class="t-dim">Effort required by customer to resolve</td></tr>
+              <tr><td class="mono t-pink">Informational_Educational</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether contact was informational</td></tr>
+              <tr><td class="mono t-pink">Self_Serve_Eligibility</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether issue could be self-served</td></tr>
+              <tr><td class="mono t-pink">KB_Gap_Identified</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether a knowledge base gap was found</td></tr>
+              <tr><td class="mono t-pink">Alternate_Resource_Utilised</td><td><span class="type-chip tc-str">string (JSON list)</span></td><td class="t-dim">External resources used by agent</td></tr>
+              <tr><td class="mono t-pink">Pre_Sentiment</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Customer sentiment at start — Neutral, Frustrated, Angry, etc.</td></tr>
+              <tr><td class="mono t-pink">Post_Sentiment</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Customer sentiment at end — Satisfied, Relieved, Dissatisfied, etc.</td></tr>
+              <tr><td class="mono t-pink">Repeat_Contact</td><td><span class="type-chip tc-bool">bool</span></td><td class="t-dim">Whether customer contacted before for same issue</td></tr>
+              <tr><td class="mono t-pink">Channel_of_Origin</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Contact channel: Chat, Call, Email, Phone</td></tr>
+              <tr><td class="mono t-pink">AHT</td><td><span class="type-chip tc-int">int</span></td><td class="t-dim">Average Handle Time in minutes</td></tr>
+              <tr><td class="mono t-pink">Agent_Resolution_Step</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Steps taken by agent to resolve</td></tr>
+              <tr><td class="mono t-pink">topic_text</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Raw topic text from conversation</td></tr>
+              <tr><td class="mono t-pink">L1</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Level 1 topic category (14 categories)</td></tr>
+              <tr><td class="mono t-pink">L2</td><td><span class="type-chip tc-str">string</span></td><td class="t-dim">Level 2 topic subcategory (27 subcategories)</td></tr>
+              <tr><td class="mono t-pink">date</td><td><span class="type-chip tc-dt">datetime</span></td><td class="t-dim">Timestamp extracted from <code>case_id</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           ETL FUNCTION REFERENCE HEADER
+      ══════════════════════════════════════════════════ -->
+      <div class="section">
+        <p class="section-label">ETL Pipeline</p>
+        <div class="section-title">etl_pipeline.py — Function Reference</div>
+        <p class="section-desc">11 functions that orchestrate data loading, filtering, metric computation, and JSON output generation.</p>
+      </div>
+
+      <!-- ── load_data ── -->
+      <div class="func-card" id="load_data">
+        <div class="func-header">
+          <div><div class="func-name-badge">load_data</div></div>
+          <div class="func-desc">Loads the CSV and parses the date column.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td class="mono t-pink">filepath</td>
+                  <td><span class="type-chip tc-str">str</span></td>
+                  <td class="mono t-yellow">"case_level_data.csv"</td>
+                  <td class="t-dim">Path to the CSV file</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output</div>
+          <div class="chip-row">
+            <span class="chip chip-blue"><span class="type-chip tc-df" style="margin-right:4px">pd.DataFrame</span> — raw dataframe with <code>date</code> column as <code>datetime64</code></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── filter_data ── -->
+      <div class="func-card" id="filter_data">
+        <div class="func-header">
+          <div><div class="func-name-badge">filter_data</div></div>
+          <div class="func-desc">Splits the dataframe into a current and previous time window, optionally filtered by channel.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">—</td><td class="t-dim">Full raw dataframe</td></tr>
+                <tr><td class="mono t-pink">time_window_days</td><td><span class="type-chip tc-int">int</span></td><td class="t-dim">—</td><td class="t-dim">Window size in days (e.g. 1, 7, 30)</td></tr>
+                <tr><td class="mono t-pink">channel</td><td><span class="type-chip tc-str">str</span></td><td class="t-dim">—</td><td class="t-dim"><code>"All"</code> to skip filter, or <code>"Chat"</code> / <code>"Call"</code> / <code>"Email"</code> / <code>"Phone"</code></td></tr>
+                <tr><td class="mono t-pink">reference_date</td><td><span class="type-chip tc-dt">datetime</span></td><td class="mono t-yellow">None</td><td class="t-dim">Anchor date; defaults to max date in df</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>(current_df, previous_df)</code></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>DataFrame</th><th>Date Range</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-blue">current_df</td><td class="t-dim"><code>[reference_date − N days, reference_date]</code></td></tr>
+                <tr><td class="mono t-blue">previous_df</td><td class="t-dim"><code>[reference_date − 2N days, reference_date − N days)</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── calculate_kpis ── -->
+      <div class="func-card" id="calculate_kpis">
+        <div class="func-header">
+          <div><div class="func-name-badge">calculate_kpis</div></div>
+          <div class="func-desc">Computes 5 core KPIs for the current period and their % change vs the previous period.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">current_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Current window data</td></tr>
+                <tr><td class="mono t-pink">previous_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Previous window data</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>dict</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">{</span>
+  <span class="c-key">"total_requests"</span>:  <span class="c-blue">{</span><span class="c-key">"value"</span>: <span class="c-num">250</span>,  <span class="c-key">"trend"</span>: <span class="c-num">8.2</span><span class="c-blue">}</span>,
+  <span class="c-key">"resolution_rate"</span>: <span class="c-blue">{</span><span class="c-key">"value"</span>: <span class="c-num">43.6</span>, <span class="c-key">"trend"</span>: <span class="c-num">-3.1</span><span class="c-blue">}</span>,
+  <span class="c-key">"aht"</span>:             <span class="c-blue">{</span><span class="c-key">"value"</span>: <span class="c-num">17.4</span>, <span class="c-key">"trend"</span>: <span class="c-num">0.0</span><span class="c-blue">}</span>,
+  <span class="c-key">"csat"</span>:            <span class="c-blue">{</span><span class="c-key">"value"</span>: <span class="c-num">55.8</span>, <span class="c-key">"trend"</span>: <span class="c-num">-5.0</span><span class="c-blue">}</span>,
+  <span class="c-key">"drop_off"</span>:        <span class="c-blue">{</span><span class="c-key">"value"</span>: <span class="c-num">1.1</span>,  <span class="c-key">"trend"</span>: <span class="c-orange">null</span><span class="c-blue">}</span>
+<span class="c-blue">}</span></pre>
+          </div>
+          <div class="note">
+            <span class="note-icon">⚠️</span>
+            <span><code>trend</code> is <code>null</code> when previous window is empty (no prior baseline). All values rounded to 1 decimal place.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── generate_chart_data ── -->
+      <div class="func-card" id="generate_chart_data">
+        <div class="func-header">
+          <div><div class="func-name-badge">generate_chart_data</div></div>
+          <div class="func-desc">Produces time-bucketed trend data and L1-level issue cluster data for charts.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">current_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Current window data</td></tr>
+                <tr><td class="mono t-pink">previous_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Previous window data</td></tr>
+                <tr><td class="mono t-pink">time_window_days</td><td><span class="type-chip tc-int">int</span></td><td class="t-dim">Drives bucketing — hourly if <code>1</code>, daily otherwise</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>dict</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">{</span>
+  <span class="c-key">"trends"</span>: <span class="c-blue">[</span>
+    <span class="c-blue">{</span><span class="c-key">"date"</span>: <span class="c-str">"2026-03-12"</span>, <span class="c-key">"volume"</span>: <span class="c-num">35</span>, <span class="c-key">"resolution"</span>: <span class="c-num">48.6</span>, <span class="c-key">"escalation"</span>: <span class="c-num">22.9</span><span class="c-blue">}</span>
+  <span class="c-blue">]</span>,
+  <span class="c-key">"clusters"</span>: <span class="c-blue">[</span>
+    <span class="c-blue">{</span><span class="c-key">"topic"</span>: <span class="c-str">"Display &amp; Screen"</span>, <span class="c-key">"vol"</span>: <span class="c-num">41</span>, <span class="c-key">"prev_vol"</span>: <span class="c-num">27</span>, <span class="c-key">"chg"</span>: <span class="c-num">51.9</span>, <span class="c-key">"trend_data"</span>: <span class="c-blue">[</span><span class="c-num">4,8,7,6,8,8</span><span class="c-blue">]}</span>
+  <span class="c-blue">]</span>
+<span class="c-blue">}</span></pre>
+          </div>
+          <div class="note">
+            <span class="note-icon">⚠️</span>
+            <span><code>trends.date</code> format: <code>"YYYY-MM-DD"</code> for daily, <code>"YYYY-MM-DD HH:00"</code> for hourly. <code>clusters.chg</code> is <code>null</code> when <code>prev_vol</code> is 0.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── get_top_trending_topics ── -->
+      <div class="func-card" id="get_top_trending">
+        <div class="func-header">
+          <div><div class="func-name-badge">get_top_trending_topics</div></div>
+          <div class="func-desc">Returns all L1 topics with positive volume growth vs the previous period, sorted by growth % descending.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">current_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Current window data</td></tr>
+                <tr><td class="mono t-pink">previous_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Previous window data</td></tr>
+                <tr><td class="mono t-pink">time_window_days</td><td><span class="type-chip tc-int">int</span></td><td class="t-dim">Drives sparkline bucketing</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>list</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">[</span>
+  <span class="c-blue">{</span><span class="c-key">"topic"</span>: <span class="c-str">"Device Setup"</span>, <span class="c-key">"vol"</span>: <span class="c-num">11</span>, <span class="c-key">"trend_pct"</span>: <span class="c-num">266.7</span>, <span class="c-key">"trend_data"</span>: <span class="c-blue">[</span><span class="c-num">2,2,2,1,3,0,1</span><span class="c-blue">]}</span>
+<span class="c-blue">]</span></pre>
+          </div>
+          <div class="note">
+            <span class="note-icon">⚠️</span>
+            <span>Topics with <code>prev_vol == 0</code> or <code>trend_pct &lt;= 0</code> are excluded.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── get_performing_topics ── -->
+      <div class="func-card" id="get_performing">
+        <div class="func-header">
+          <div><div class="func-name-badge">get_performing_topics</div></div>
+          <div class="func-desc">Returns all L1 topics sorted by CSAT score descending.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">current_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Current window data</td></tr>
+                <tr><td class="mono t-pink">time_window_days</td><td><span class="type-chip tc-int">int</span></td><td class="t-dim">Drives sparkline bucketing</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>list</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">[</span>
+  <span class="c-blue">{</span><span class="c-key">"topic"</span>: <span class="c-str">"Features &amp; Compatibility"</span>, <span class="c-key">"vol"</span>: <span class="c-num">4</span>, <span class="c-key">"csat"</span>: <span class="c-num">100.0</span>, <span class="c-key">"trend_data"</span>: <span class="c-blue">[</span><span class="c-num">1,0,0,1</span><span class="c-blue">]}</span>
+<span class="c-blue">]</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── get_category_metrics ── -->
+      <div class="func-card" id="get_category">
+        <div class="func-header">
+          <div><div class="func-name-badge">get_category_metrics</div></div>
+          <div class="func-desc">Returns all L1 topics with resolution, repeat contact, and drop-off rates. Sorted by volume descending.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">current_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Current window data</td></tr>
+                <tr><td class="mono t-pink">time_window_days</td><td><span class="type-chip tc-int">int</span></td><td class="t-dim">Drives sparkline bucketing</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>list</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">[</span>
+  <span class="c-blue">{</span>
+    <span class="c-key">"topic"</span>:       <span class="c-str">"Display &amp; Screen"</span>,
+    <span class="c-key">"vol"</span>:         <span class="c-num">41</span>,
+    <span class="c-key">"resolution"</span>:  <span class="c-num">43.9</span>,
+    <span class="c-key">"repeat_call"</span>: <span class="c-num">2.4</span>,
+    <span class="c-key">"drop_off"</span>:    <span class="c-num">0.0</span>,
+    <span class="c-key">"trend_data"</span>:  <span class="c-blue">[</span><span class="c-num">4,0,8,8,7,6,8</span><span class="c-blue">]</span>
+  <span class="c-blue">}</span>
+<span class="c-blue">]</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── get_issues_deep_dive ── -->
+      <div class="func-card" id="get_issues">
+        <div class="func-header">
+          <div><div class="func-name-badge">get_issues_deep_dive</div></div>
+          <div class="func-desc">Calculates 7 detailed metrics for every L1 + L2 combination. Sorted by volume descending.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">current_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Current window data</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>list</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">[</span>
+  <span class="c-blue">{</span>
+    <span class="c-key">"l1_topic"</span>:   <span class="c-str">"Network &amp; Connectivity"</span>,
+    <span class="c-key">"l2_topic"</span>:   <span class="c-str">"wifi connectivity problems"</span>,
+    <span class="c-key">"volume"</span>:     <span class="c-num">24</span>,
+    <span class="c-key">"csat"</span>:       <span class="c-num">62.5</span>,
+    <span class="c-key">"drop_off"</span>:   <span class="c-num">0.0</span>,
+    <span class="c-key">"aht"</span>:        <span class="c-num">19.0</span>,
+    <span class="c-key">"is_resolved"</span>:<span class="c-num">45.8</span>,
+    <span class="c-key">"repeat"</span>:     <span class="c-num">0.0</span>,
+    <span class="c-key">"escalation"</span>: <span class="c-num">29.2</span>
+  <span class="c-blue">}</span>
+<span class="c-blue">]</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── generate_monitoring_data ── -->
+      <div class="func-card" id="gen_monitoring">
+        <div class="func-header">
+          <div><div class="func-name-badge">generate_monitoring_data</div></div>
+          <div class="func-desc">Wrapper that stitches the three monitoring screen functions into a single dict.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">current_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Current window data</td></tr>
+                <tr><td class="mono t-pink">previous_df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">Previous window data</td></tr>
+                <tr><td class="mono t-pink">time_window_days</td><td><span class="type-chip tc-int">int</span></td><td class="t-dim">Drives sparkline bucketing</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>dict</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">{</span>
+  <span class="c-key">"trending"</span>:         <span class="c-dim">[...],  // get_top_trending_topics() output</span>
+  <span class="c-key">"performing"</span>:       <span class="c-dim">[...],  // get_performing_topics() output</span>
+  <span class="c-key">"category_metrics"</span>: <span class="c-dim">[...]   // get_category_metrics() output</span>
+<span class="c-blue">}</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── generate_basic_insight ── -->
+      <div class="func-card" id="gen_insight">
+        <div class="func-header">
+          <div><div class="func-name-badge">generate_basic_insight</div></div>
+          <div class="func-desc">Generates a deterministic 2-sentence text summary. Placeholder for future LLM integration.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">kpis</td><td><span class="type-chip tc-dict">dict</span></td><td class="t-dim">Output of <code>calculate_kpis()</code></td></tr>
+                <tr><td class="mono t-pink">charts</td><td><span class="type-chip tc-dict">dict</span></td><td class="t-dim">Output of <code>generate_chart_data()</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — <code>str</code></div>
+          <div class="code-block">
+            <div class="code-bar"><span>example output</span></div>
+            <pre><span class="c-str">"Support volume reached 250 interactions, marking a 8.2% increase vs the previous period.
+The primary driver of contact was 'Display &amp; Screen', with the overall resolution rate sitting at 43.6%."</span></pre>
+          </div>
+          <div class="note">
+            <span class="note-icon">⚠️</span>
+            <span>Trend comparison omitted if <code>trend</code> is <code>null</code>. Top issue sentence omitted if <code>clusters</code> is empty.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── build_dashboard_payloads ── -->
+      <div class="func-card" id="build_payloads">
+        <div class="func-header">
+          <div><div class="func-name-badge">build_dashboard_payloads</div></div>
+          <div class="func-desc">Orchestrates the full ETL pipeline across all 12 filter combinations (3 time windows × 4 channels) and writes one JSON file per combination.</div>
+        </div>
+        <div class="func-body">
+          <div class="io-label input">Input Parameters</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-pink">df</td><td><span class="type-chip tc-df">pd.DataFrame</span></td><td class="t-dim">—</td><td class="t-dim">Full raw dataframe</td></tr>
+                <tr><td class="mono t-pink">output_dir</td><td><span class="type-chip tc-str">str</span></td><td class="mono t-yellow">"output"</td><td class="t-dim">Directory to write JSON files</td></tr>
+                <tr><td class="mono t-pink">reference_date</td><td><span class="type-chip tc-dt">datetime</span></td><td class="mono t-yellow">None</td><td class="t-dim">Anchor date; defaults to max date in df</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output">Output — Writes 12 JSON files to <code>output/</code></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>File</th><th>Time Window</th><th>Channel</th></tr></thead>
+              <tbody>
+                <tr><td class="mono t-blue">dashboard_1d_all.json</td><td class="t-dim">24 hours</td><td class="t-dim">All</td></tr>
+                <tr><td class="mono t-blue">dashboard_1d_chat.json</td><td class="t-dim">24 hours</td><td class="t-dim">Chat</td></tr>
+                <tr><td class="mono t-blue">dashboard_1d_call.json</td><td class="t-dim">24 hours</td><td class="t-dim">Call</td></tr>
+                <tr><td class="mono t-blue">dashboard_1d_email.json</td><td class="t-dim">24 hours</td><td class="t-dim">Email</td></tr>
+                <tr><td class="mono t-blue">dashboard_7d_all.json</td><td class="t-dim">7 days</td><td class="t-dim">All</td></tr>
+                <tr><td class="mono t-blue">dashboard_7d_chat.json</td><td class="t-dim">7 days</td><td class="t-dim">Chat</td></tr>
+                <tr><td class="mono t-blue">dashboard_7d_call.json</td><td class="t-dim">7 days</td><td class="t-dim">Call</td></tr>
+                <tr><td class="mono t-blue">dashboard_7d_email.json</td><td class="t-dim">7 days</td><td class="t-dim">Email</td></tr>
+                <tr><td class="mono t-blue">dashboard_30d_all.json</td><td class="t-dim">30 days</td><td class="t-dim">All</td></tr>
+                <tr><td class="mono t-blue">dashboard_30d_chat.json</td><td class="t-dim">30 days</td><td class="t-dim">Chat</td></tr>
+                <tr><td class="mono t-blue">dashboard_30d_call.json</td><td class="t-dim">30 days</td><td class="t-dim">Call</td></tr>
+                <tr><td class="mono t-blue">dashboard_30d_email.json</td><td class="t-dim">30 days</td><td class="t-dim">Email</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="io-label output" style="margin-top:18px">Each JSON File Structure</div>
+          <div class="code-block">
+            <div class="code-bar"><span>json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+            <pre><span class="c-blue">{</span>
+  <span class="c-key">"filters"</span>:         <span class="c-blue">{</span><span class="c-key">"time"</span>: <span class="c-str">"7d"</span>, <span class="c-key">"channel"</span>: <span class="c-str">"chat"</span>, <span class="c-key">"start_date"</span>: <span class="c-str">"..."</span>, <span class="c-key">"end_date"</span>: <span class="c-str">"..."</span><span class="c-blue">}</span>,
+  <span class="c-key">"kpis"</span>:            <span class="c-blue">{</span><span class="c-dim">...</span><span class="c-blue">}</span>,
+  <span class="c-key">"charts"</span>:          <span class="c-blue">{</span><span class="c-key">"trends"</span>: <span class="c-blue">[...]</span>, <span class="c-key">"clusters"</span>: <span class="c-blue">[...]}</span>,
+  <span class="c-key">"ai_insight"</span>:      <span class="c-str">"..."</span>,
+  <span class="c-key">"monitoring"</span>:      <span class="c-blue">{</span><span class="c-key">"trending"</span>: <span class="c-blue">[...]</span>, <span class="c-key">"performing"</span>: <span class="c-blue">[...]</span>, <span class="c-key">"category_metrics"</span>: <span class="c-blue">[...]}</span>,
+  <span class="c-key">"issues_insights"</span>: <span class="c-blue">[...]</span>
+<span class="c-blue">}</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           API REFERENCE
+      ══════════════════════════════════════════════════ -->
+      <div class="section" id="api-setup">
+        <p class="section-label">API Reference</p>
+        <div class="section-title">api.py — Setup</div>
+        <p class="section-desc">Lightweight FastAPI server that serves pre-computed JSON. No computation happens at request time.</p>
+
+        <div class="card">
+          <div class="card-body" style="padding-top:20px">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+                <tbody>
+                  <tr><td class="t-dim">Framework</td><td><span class="chip chip-blue">FastAPI</span></td></tr>
+                  <tr><td class="t-dim">Server</td><td><span class="chip chip-purple">Uvicorn</span></td></tr>
+                  <tr><td class="t-dim">Host</td><td class="mono t-blue">0.0.0.0:8000</td></tr>
+                  <tr><td class="t-dim">CORS Origins</td><td><span class="chip chip-green">All origins allowed ( * )</span></td></tr>
+                  <tr><td class="t-dim">CORS Methods</td><td class="mono t-dim">*</td></tr>
+                  <tr><td class="t-dim">CORS Headers</td><td class="mono t-dim">*</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GET /api/dashboard -->
+      <div class="section" id="api-endpoint">
+        <div class="section-title">GET /api/dashboard</div>
+        <p class="section-desc">Serves a pre-computed dashboard payload JSON file based on query parameters.</p>
+
+        <div class="card">
+          <div class="card-body" style="padding-top:20px">
+            <div class="endpoint-row">
+              <span class="method-badge">GET</span>
+              <span class="url-text">http://localhost:8000/api/dashboard</span>
+            </div>
+
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Query Parameters</div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Valid Values</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td class="mono t-pink">time_window</td>
+                    <td><span class="type-chip tc-str">str</span></td>
+                    <td class="mono t-yellow">"7d"</td>
+                    <td class="mono t-green">"24h" &nbsp;|&nbsp; "7d" &nbsp;|&nbsp; "30d"</td>
+                  </tr>
+                  <tr>
+                    <td class="mono t-pink">channel</td>
+                    <td><span class="type-chip tc-str">str</span></td>
+                    <td class="mono t-yellow">"all"</td>
+                    <td class="mono t-green">"all" &nbsp;|&nbsp; "chat" &nbsp;|&nbsp; "call" &nbsp;|&nbsp; "email"</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin:18px 0 10px">Example Requests</div>
+            <div class="code-block">
+              <div class="code-bar"><span>http</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <pre><span class="c-green">GET</span> /api/dashboard
+<span class="c-green">GET</span> /api/dashboard?time_window=30d&amp;channel=chat
+<span class="c-green">GET</span> /api/dashboard?time_window=24h&amp;channel=all</pre>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px;margin-top:18px">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                  <span class="resp-ok">200 OK</span>
+                  <span style="font-size:13px;color:var(--muted)">Returns the full dashboard payload JSON</span>
+                </div>
+                <div class="code-block">
+                  <div class="code-bar"><span>response schema</span></div>
+                  <pre><span class="c-blue">{</span>
+  <span class="c-key">"filters"</span>:         <span class="c-blue">{</span> <span class="c-dim">time, channel, start_date, end_date</span> <span class="c-blue">}</span>,
+  <span class="c-key">"kpis"</span>:            <span class="c-blue">{</span> <span class="c-dim">total_requests, resolution_rate, aht, csat, drop_off</span> <span class="c-blue">}</span>,
+  <span class="c-key">"charts"</span>:          <span class="c-blue">{</span> <span class="c-key">"trends"</span>: <span class="c-blue">[...]</span>, <span class="c-key">"clusters"</span>: <span class="c-blue">[...]</span> <span class="c-blue">}</span>,
+  <span class="c-key">"ai_insight"</span>:      <span class="c-str">"..."</span>,
+  <span class="c-key">"monitoring"</span>:      <span class="c-blue">{</span> <span class="c-dim">trending, performing, category_metrics</span> <span class="c-blue">}</span>,
+  <span class="c-key">"issues_insights"</span>: <span class="c-blue">[...]</span>
+<span class="c-blue">}</span></pre>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                  <span class="resp-err">404 Not Found</span>
+                  <span style="font-size:13px;color:var(--muted)">Invalid parameter combination</span>
+                </div>
+                <div class="code-block">
+                  <div class="code-bar"><span>error response</span></div>
+                  <pre><span class="c-blue">{</span>
+  <span class="c-key">"detail"</span>: <span class="c-str">"No dashboard file found for time_window='90d' and channel='chat'.
+            Valid time windows: 24h, 7d, 30d.
+            Valid channels: all, chat, call, email."</span>
+<span class="c-blue">}</span></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════
+           REGENERATING OUTPUT
+      ══════════════════════════════════════════════════ -->
+      <div class="section" id="regenerate">
+        <p class="section-label">Maintenance</p>
+        <div class="section-title">Regenerating the Output Files</div>
+        <p class="section-desc">Run <code>etl_pipeline.py</code> any time the source data changes. The API serves pre-computed files, so the server does not need to restart.</p>
+
+        <div class="card">
+          <div class="card-body" style="padding-top:20px">
+            <div class="code-block">
+              <div class="code-bar"><span>bash</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <pre><span class="c-str">venv\Scripts\python.exe</span> etl_pipeline.py</pre>
+            </div>
+
+            <div style="margin-top:20px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:12px">The pipeline will</div>
+            <div class="pipeline">
+              <div class="pipe-step">
+                <div class="pipe-num">1</div>
+                <div class="pipe-text">Load <code>case_level_data.csv</code></div>
+              </div>
+              <div class="pipe-step">
+                <div class="pipe-num">2</div>
+                <div class="pipe-text">Auto-detect the max date as the reference anchor</div>
+              </div>
+              <div class="pipe-step">
+                <div class="pipe-num">3</div>
+                <div class="pipe-text">Compute all metrics and write 12 JSON files to <code>output/</code></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /layout -->
+
+<script>
+  // ── Copy buttons ──
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ── Active nav on scroll ──
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
