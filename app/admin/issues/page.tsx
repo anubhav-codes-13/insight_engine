@@ -3,7 +3,7 @@
 import { useState } from "react";
 import AdminLayout from "@/components/dashboard/AdminLayout";
 import { INSIGHTS_TOPICS, L1_CATEGORIES } from "@/lib/mockData";
-import { BadgeCheck, OctagonAlert, TrendingUp, Search, CheckCircle2, XCircle } from "lucide-react";
+import { OctagonAlert, Search, CheckCircle2, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,17 +11,62 @@ const DATE_RANGES = ["24h", "7d", "30d"] as const;
 const DATE_LABELS: Record<string, string> = { "24h": "24 Hours", "7d": "7 Days", "30d": "30 Days" };
 const CHANNELS = ["All", "Chat", "Call", "Email"];
 
+// Volume multipliers per filter combination
+const DATE_VOL: Record<string, number> = { "24h": 0.14, "7d": 1, "30d": 4.1 };
+const CHAN_VOL: Record<string, number> = { All: 1, Chat: 0.55, Call: 0.30, Email: 0.15 };
+
+// Percentage metric deltas per channel (applied additively)
+const CHAN_DELTA: Record<string, Record<string, number>> = {
+    All:   { csat: 0,  dropOff: 0,  escalation: 0,  isResolved: 0,  repeat: 0  },
+    Chat:  { csat: 8,  dropOff: -5, escalation: -4, isResolved: 8,  repeat: -4 },
+    Call:  { csat: -6, dropOff: 7,  escalation: 9,  isResolved: -7, repeat: 6  },
+    Email: { csat: -9, dropOff: 10, escalation: 11, isResolved: -13,repeat: 9  },
+};
+const DATE_DELTA: Record<string, Record<string, number>> = {
+    "24h": { csat: -4, dropOff: 5,  escalation: 6,  isResolved: -5, repeat: 4  },
+    "7d":  { csat: 0,  dropOff: 0,  escalation: 0,  isResolved: 0,  repeat: 0  },
+    "30d": { csat: 5,  dropOff: -4, escalation: -5, isResolved: 6,  repeat: -4 },
+};
+
+function shiftPct(base: string, delta: number): string {
+    const val = Math.max(1, Math.min(99, parseInt(base) + delta));
+    return `${val}%`;
+}
+
 export default function IssueInsights() {
     const [searchQuery, setSearchQuery] = useState("");
     const [category, setCategory] = useState("All");
     const [dateRange, setDateRange] = useState<"24h" | "7d" | "30d">("7d");
     const [channel, setChannel] = useState("All");
+    const [page, setPage] = useState(0);
+    const PAGE_SIZE = 5;
 
-    const filteredIssues = INSIGHTS_TOPICS.filter((issue) => {
-        const matchesSearch = issue.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = category === "All" || issue.category === category;
-        return matchesSearch && matchesCategory;
-    }).slice(0, 10);
+    const allIssues = INSIGHTS_TOPICS
+        .filter((issue) => {
+            const matchesSearch = issue.name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCategory = category === "All" || issue.category === category;
+            return matchesSearch && matchesCategory;
+        })
+        .map((issue) => {
+            const volMul = DATE_VOL[dateRange] * CHAN_VOL[channel];
+            const cd = CHAN_DELTA[channel];
+            const dd = DATE_DELTA[dateRange];
+            return {
+                ...issue,
+                volume:     Math.round(issue.volume * volMul),
+                csat:       shiftPct(issue.csat,       cd.csat       + dd.csat),
+                dropOff:    shiftPct(issue.dropOff,    cd.dropOff    + dd.dropOff),
+                escalation: shiftPct(issue.escalation, cd.escalation + dd.escalation),
+                isResolved: shiftPct(issue.isResolved, cd.isResolved + dd.isResolved),
+                repeat:     shiftPct(issue.repeat,     cd.repeat     + dd.repeat),
+            };
+        })
+        .sort((a, b) => b.volume - a.volume)
+        .map((issue, i) => ({ ...issue, rank: i + 1 }));
+
+    const totalPages = Math.ceil(allIssues.length / PAGE_SIZE);
+    const safePage = Math.min(page, Math.max(0, totalPages - 1));
+    const filteredIssues = allIssues.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
     return (
         <AdminLayout>
@@ -37,7 +82,7 @@ export default function IssueInsights() {
                         {DATE_RANGES.map((d) => (
                             <button
                                 key={d}
-                                onClick={() => setDateRange(d)}
+                                onClick={() => { setDateRange(d); setPage(0); }}
                                 className={cn(
                                     "px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest border transition-all",
                                     dateRange === d
@@ -53,7 +98,7 @@ export default function IssueInsights() {
                         {CHANNELS.map((c) => (
                             <button
                                 key={c}
-                                onClick={() => setChannel(c)}
+                                onClick={() => { setChannel(c); setPage(0); }}
                                 className={cn(
                                     "px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest border transition-all",
                                     channel === c
@@ -79,34 +124,33 @@ export default function IssueInsights() {
                         <input
                             type="text"
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
                             placeholder="Search topics..."
                             className="w-full bg-zinc-900/50 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all text-white placeholder:text-zinc-600"
                         />
                     </div>
                 </div>
 
-                {/* Category Filter Pills */}
+                {/* Category Filter Dropdown */}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 }}
-                    className="flex flex-wrap gap-2"
+                    className="flex items-center gap-3"
                 >
-                    {L1_CATEGORIES.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setCategory(cat)}
-                            className={cn(
-                                "px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest border transition-all",
-                                category === cat
-                                    ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                                    : "bg-zinc-900 text-zinc-500 border-white/5 hover:text-white hover:border-white/10"
-                            )}
-                        >
-                            {cat}
-                        </button>
-                    ))}
+                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-zinc-600 shrink-0">Category</span>
+                    <select
+                        value={category}
+                        onChange={(e) => { setCategory(e.target.value); setPage(0); }}
+                        className="bg-zinc-900 border border-white/5 text-xs font-bold text-zinc-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/20 transition-all cursor-pointer appearance-none pr-8"
+                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}
+                    >
+                        {L1_CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat} className="bg-zinc-900 text-zinc-300">
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
                 </motion.div>
 
                 {/* Issue Table */}
@@ -248,6 +292,32 @@ export default function IssueInsights() {
                         </table>
                     </div>
                 </motion.div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-2">
+                        <p className="text-xs text-zinc-600 font-semibold tabular-nums">
+                            Showing <span className="text-zinc-400">{safePage * PAGE_SIZE + 1}–{Math.min((safePage + 1) * PAGE_SIZE, allIssues.length)}</span> of <span className="text-zinc-400">{allIssues.length}</span> topics
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-zinc-600 font-bold tabular-nums">{safePage + 1} / {totalPages}</span>
+                            <button
+                                onClick={() => setPage(p => Math.max(0, p - 1))}
+                                disabled={safePage === 0}
+                                className="p-1.5 rounded-lg border border-white/5 bg-zinc-900 text-zinc-500 hover:text-white hover:border-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                <ChevronLeft className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={safePage >= totalPages - 1}
+                                className="p-1.5 rounded-lg border border-white/5 bg-zinc-900 text-zinc-500 hover:text-white hover:border-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Insight Grid */}
                 {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6">
