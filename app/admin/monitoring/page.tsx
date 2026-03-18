@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import AdminLayout from "@/components/dashboard/AdminLayout";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line } from "recharts";
+import { ResponsiveContainer, LineChart, Line } from "recharts";
 import { TrendingUp, CheckCircle2, Activity, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -29,21 +29,36 @@ const L1_TOPICS = [
 const VOL_MULT:  Record<DateRange, number> = { "24h": 1 / 7, "7d": 1,    "30d": 4.3  };
 const CHAN_SPLIT: Record<Channel, number>  = { "All": 1,      "Chat": 0.55, "Call": 0.30, "Email": 0.15 };
 
-// ─── Resolution donut per filter ──────────────────────────────────────────────
-const RESOLUTION_BY_FILTER: Record<string, { name: string; value: number; color: string }[]> = {
-    "24h-All":   [{ name: "Fully Resolved", value: 58, color: "#10b981" }, { name: "Partial", value: 28, color: "#f59e0b" }, { name: "Unresolved", value: 14, color: "#ef4444" }],
-    "7d-All":    [{ name: "Fully Resolved", value: 62, color: "#10b981" }, { name: "Partial", value: 26, color: "#f59e0b" }, { name: "Unresolved", value: 12, color: "#ef4444" }],
-    "30d-All":   [{ name: "Fully Resolved", value: 66, color: "#10b981" }, { name: "Partial", value: 23, color: "#f59e0b" }, { name: "Unresolved", value: 11, color: "#ef4444" }],
-    "24h-Chat":  [{ name: "Fully Resolved", value: 71, color: "#10b981" }, { name: "Partial", value: 20, color: "#f59e0b" }, { name: "Unresolved", value:  9, color: "#ef4444" }],
-    "7d-Chat":   [{ name: "Fully Resolved", value: 74, color: "#10b981" }, { name: "Partial", value: 18, color: "#f59e0b" }, { name: "Unresolved", value:  8, color: "#ef4444" }],
-    "30d-Chat":  [{ name: "Fully Resolved", value: 78, color: "#10b981" }, { name: "Partial", value: 16, color: "#f59e0b" }, { name: "Unresolved", value:  6, color: "#ef4444" }],
-    "24h-Call":  [{ name: "Fully Resolved", value: 55, color: "#10b981" }, { name: "Partial", value: 28, color: "#f59e0b" }, { name: "Unresolved", value: 17, color: "#ef4444" }],
-    "7d-Call":   [{ name: "Fully Resolved", value: 58, color: "#10b981" }, { name: "Partial", value: 26, color: "#f59e0b" }, { name: "Unresolved", value: 16, color: "#ef4444" }],
-    "30d-Call":  [{ name: "Fully Resolved", value: 61, color: "#10b981" }, { name: "Partial", value: 25, color: "#f59e0b" }, { name: "Unresolved", value: 14, color: "#ef4444" }],
-    "24h-Email": [{ name: "Fully Resolved", value: 44, color: "#10b981" }, { name: "Partial", value: 32, color: "#f59e0b" }, { name: "Unresolved", value: 24, color: "#ef4444" }],
-    "7d-Email":  [{ name: "Fully Resolved", value: 47, color: "#10b981" }, { name: "Partial", value: 30, color: "#f59e0b" }, { name: "Unresolved", value: 23, color: "#ef4444" }],
-    "30d-Email": [{ name: "Fully Resolved", value: 50, color: "#10b981" }, { name: "Partial", value: 29, color: "#f59e0b" }, { name: "Unresolved", value: 21, color: "#ef4444" }],
+// ─── Per-topic metrics table (dynamic by filter) ──────────────────────────────
+const TOPIC_BASE: Record<string, { res: number; rep: number; drop: number }> = {
+    "Payment Failed":    { res: 61, rep: 29, drop: 34 },
+    "Order Not Created": { res: 74, rep: 21, drop: 22 },
+    "Refund Delay":      { res: 52, rep: 38, drop: 41 },
+    "Card Declined":     { res: 68, rep: 24, drop: 29 },
+    "OTP Not Received":  { res: 88, rep: 12, drop: 18 },
+    "Delivery Tracking": { res: 86, rep: 10, drop: 12 },
 };
+const DATE_METRIC_ADJ: Record<string, { res: number; rep: number; drop: number }> = {
+    "24h": { res: -5, rep:  4, drop:  5 },
+    "7d":  { res:  0, rep:  0, drop:  0 },
+    "30d": { res:  4, rep: -3, drop: -4 },
+};
+const CHAN_METRIC_ADJ: Record<string, { res: number; rep: number; drop: number }> = {
+    "All":   { res:   0, rep:  0, drop:  0 },
+    "Chat":  { res:  10, rep: -8, drop: -8 },
+    "Call":  { res:  -7, rep:  6, drop:  7 },
+    "Email": { res: -14, rep: 10, drop: 12 },
+};
+function getTopicMetrics(dr: string, ch: string): Record<string, { resolution: string; repeatCall: string; dropOff: string }> {
+    const da = DATE_METRIC_ADJ[dr] ?? DATE_METRIC_ADJ["7d"];
+    const ca = CHAN_METRIC_ADJ[ch] ?? CHAN_METRIC_ADJ["All"];
+    const clamp = (v: number) => Math.min(98, Math.max(5, v));
+    return Object.fromEntries(Object.entries(TOPIC_BASE).map(([name, b]) => [name, {
+        resolution: `${clamp(b.res  + da.res  + ca.res)}%`,
+        repeatCall: `${clamp(b.rep  + da.rep  + ca.rep)}%`,
+        dropOff:    `${clamp(b.drop + da.drop + ca.drop)}%`,
+    }]));
+}
 
 // ─── Trending topics per filter ───────────────────────────────────────────────
 const TRENDING_BY_FILTER: Record<string, { name: string; change: string; volume: number; spark: number[] }[]> = {
@@ -139,15 +154,6 @@ const PERFORMING_BY_FILTER: Record<string, { name: string; resolutionRate: strin
 
 
 
-// ─── Per-L1-topic resolution data ─────────────────────────────────────────────
-const L1_TOPIC_RESOLUTION: Record<string, { name: string; value: number; color: string }[]> = {
-    "Payment Failed":    [{ name: "Fully Resolved", value: 61, color: "#10b981" }, { name: "Partial", value: 25, color: "#f59e0b" }, { name: "Unresolved", value: 14, color: "#ef4444" }],
-    "Order Not Created": [{ name: "Fully Resolved", value: 74, color: "#10b981" }, { name: "Partial", value: 18, color: "#f59e0b" }, { name: "Unresolved", value:  8, color: "#ef4444" }],
-    "Refund Delay":      [{ name: "Fully Resolved", value: 52, color: "#10b981" }, { name: "Partial", value: 30, color: "#f59e0b" }, { name: "Unresolved", value: 18, color: "#ef4444" }],
-    "Card Declined":     [{ name: "Fully Resolved", value: 68, color: "#10b981" }, { name: "Partial", value: 22, color: "#f59e0b" }, { name: "Unresolved", value: 10, color: "#ef4444" }],
-    "OTP Not Received":  [{ name: "Fully Resolved", value: 88, color: "#10b981" }, { name: "Partial", value:  9, color: "#f59e0b" }, { name: "Unresolved", value:  3, color: "#ef4444" }],
-    "Delivery Tracking": [{ name: "Fully Resolved", value: 86, color: "#10b981" }, { name: "Partial", value: 11, color: "#f59e0b" }, { name: "Unresolved", value:  3, color: "#ef4444" }],
-};
 
 // ─── Per-L1-topic trending (sub-issues) ───────────────────────────────────────
 const L1_TOPIC_TRENDING: Record<string, { name: string; change: string; volume: number; spark: number[] }[]> = {
@@ -169,21 +175,26 @@ const L1_TOPIC_PERFORMING: Record<string, { name: string; resolutionRate: string
     "Delivery Tracking": [{ name: "Wrong Address",         resolutionRate: "94%", avgTime: "52s",    csat: "90%" }, { name: "Tracking Not Updating", resolutionRate: "88%", avgTime: "1m 20s", csat: "86%" }, { name: "Delivery Exception",    resolutionRate: "80%", avgTime: "2m 40s", csat: "80%" }, { name: "Lost Package",          resolutionRate: "58%", avgTime: "6m 30s", csat: "64%" }],
 };
 
+// ─── Per-L1-topic sub-issue metrics ───────────────────────────────────────────
+const L1_TOPIC_METRICS: Record<string, { name: string; resolution: string; repeatCall: string; dropOff: string }[]> = {
+    "Payment Failed":    [{ name: "Card Expired",          resolution: "96%", repeatCall: "5%",  dropOff: "4%"  }, { name: "Insufficient Funds",    resolution: "88%", repeatCall: "14%", dropOff: "12%" }, { name: "Gateway Timeout",       resolution: "74%", repeatCall: "24%", dropOff: "28%" }, { name: "3DS Auth Failure",      resolution: "62%", repeatCall: "32%", dropOff: "38%" }],
+    "Order Not Created": [{ name: "Duplicate Order",       resolution: "98%", repeatCall: "3%",  dropOff: "2%"  }, { name: "Payment Hold",          resolution: "92%", repeatCall: "9%",  dropOff: "8%"  }, { name: "Inventory Mismatch",    resolution: "84%", repeatCall: "18%", dropOff: "16%" }, { name: "OMS Timeout",           resolution: "68%", repeatCall: "28%", dropOff: "32%" }],
+    "Refund Delay":      [{ name: "Refund Not Initiated",  resolution: "90%", repeatCall: "11%", dropOff: "10%" }, { name: "Partial Refund Error",  resolution: "82%", repeatCall: "19%", dropOff: "18%" }, { name: "Manual Review",         resolution: "64%", repeatCall: "34%", dropOff: "36%" }, { name: "Bank Processing Delay", resolution: "44%", repeatCall: "48%", dropOff: "56%" }],
+    "Card Declined":     [{ name: "Wrong CVV",             resolution: "97%", repeatCall: "4%",  dropOff: "3%"  }, { name: "Expired Card",          resolution: "95%", repeatCall: "6%",  dropOff: "5%"  }, { name: "Velocity Limit",        resolution: "88%", repeatCall: "13%", dropOff: "12%" }, { name: "Bank Decline",          resolution: "74%", repeatCall: "24%", dropOff: "26%" }],
+    "OTP Not Received":  [{ name: "Wrong Number",          resolution: "99%", repeatCall: "2%",  dropOff: "1%"  }, { name: "Expired OTP",           resolution: "96%", repeatCall: "5%",  dropOff: "4%"  }, { name: "SMS Gateway Delay",     resolution: "84%", repeatCall: "16%", dropOff: "16%" }, { name: "Carrier Block",         resolution: "72%", repeatCall: "26%", dropOff: "28%" }],
+    "Delivery Tracking": [{ name: "Wrong Address",         resolution: "94%", repeatCall: "7%",  dropOff: "6%"  }, { name: "Tracking Not Updating", resolution: "88%", repeatCall: "13%", dropOff: "12%" }, { name: "Delivery Exception",    resolution: "80%", repeatCall: "21%", dropOff: "20%" }, { name: "Lost Package",          resolution: "58%", repeatCall: "38%", dropOff: "42%" }],
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function MonitoringPage() {
     const [dateRange, setDateRange]       = useState<DateRange>("7d");
     const [channel, setChannel]           = useState<Channel>("All");
-    const [selectedResolution, setSelectedResolution] = useState<string | null>(null);
-    const [selectedTopic, setSelectedTopic]           = useState<string | null>(null);
-    const [dropdownOpen, setDropdownOpen]             = useState(false);
+    const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+    const [dropdownOpen, setDropdownOpen]   = useState(false);
 
     const filterKey = `${dateRange}-${channel}`;
     const volMult   = VOL_MULT[dateRange] * CHAN_SPLIT[channel];
 
-    // If an L1 topic is selected, use its specific data; otherwise use the date+channel filter
-    const resolutionData = selectedTopic
-        ? (L1_TOPIC_RESOLUTION[selectedTopic] ?? RESOLUTION_BY_FILTER[filterKey] ?? RESOLUTION_BY_FILTER["7d-All"])
-        : (RESOLUTION_BY_FILTER[filterKey]    ?? RESOLUTION_BY_FILTER["7d-All"]);
     const trendingData   = selectedTopic
         ? (L1_TOPIC_TRENDING[selectedTopic]   ?? TRENDING_BY_FILTER[filterKey]   ?? TRENDING_BY_FILTER["7d-All"])
         : (TRENDING_BY_FILTER[filterKey]      ?? TRENDING_BY_FILTER["7d-All"]);
@@ -196,45 +207,45 @@ export default function MonitoringPage() {
         volume: Math.round(t.baseVol * volMult),
     })), [volMult]);
 
-    const activeResolutionData = resolutionData;
-    const selectedL1 = l1Topics.find(t => t.name === selectedTopic);
+    const topicMetrics = getTopicMetrics(dateRange, channel);
+
 
     return (
         <AdminLayout>
             <div className="space-y-6 pb-10">
-                {/* Header */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-                    <p className="text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 mb-1">AI System</p>
-                    <h1 className="text-2xl font-bold text-white tracking-tight">L1 Deepdive</h1>
-                    <p className="text-sm text-zinc-500 mt-1">Real-time model health, topic resolution, and AI quality metrics</p>
-                </motion.div>
-
-                {/* Filters */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
-                    className="flex flex-wrap items-center gap-2"
+                {/* Filter Row — date range left, channels right */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0 }}
+                    className="flex flex-wrap items-center justify-between gap-2"
                 >
-                    <div className="flex items-center gap-1 p-1 bg-zinc-950 border border-white/5 rounded-2xl">
+                    <div className="flex gap-1.5">
                         {DATE_RANGES.map(d => (
                             <button
                                 key={d}
-                                onClick={() => { setDateRange(d); setSelectedResolution(null); setSelectedTopic(null); }}
+                                onClick={() => { setDateRange(d); setSelectedTopic(null); }}
                                 className={cn(
-                                    "px-4 py-1.5 rounded-xl text-xs font-bold transition-all",
-                                    dateRange === d ? "bg-white text-black" : "text-zinc-500 hover:text-white"
+                                    "px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest border transition-all",
+                                    dateRange === d
+                                        ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                        : "bg-zinc-900 text-zinc-500 border-white/5 hover:text-white hover:border-white/10"
                                 )}
                             >
                                 {DATE_LABELS[d]}
                             </button>
                         ))}
                     </div>
-                    <div className="flex items-center gap-1 p-1 bg-zinc-950 border border-white/5 rounded-2xl">
+                    <div className="flex gap-1.5">
                         {CHANNELS.map(c => (
                             <button
                                 key={c}
-                                onClick={() => { setChannel(c); setSelectedResolution(null); setSelectedTopic(null); }}
+                                onClick={() => { setChannel(c); setSelectedTopic(null); }}
                                 className={cn(
-                                    "px-4 py-1.5 rounded-xl text-xs font-bold transition-all",
-                                    channel === c ? "bg-white text-black" : "text-zinc-500 hover:text-white"
+                                    "px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest border transition-all",
+                                    channel === c
+                                        ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                        : "bg-zinc-900 text-zinc-500 border-white/5 hover:text-white hover:border-white/10"
                                 )}
                             >
                                 {c}
@@ -261,102 +272,77 @@ export default function MonitoringPage() {
                             </div>
                         </div>
 
-                        <ResponsiveContainer width="100%" height={180}>
-                            <PieChart>
-                                <Pie
-                                    data={activeResolutionData}
-                                    cx="50%" cy="50%"
-                                    innerRadius={50} outerRadius={78}
-                                    paddingAngle={4} dataKey="value"
-                                    onClick={(data) => {
-                                        const n = data.name ?? null;
-                                        setSelectedResolution(selectedResolution === n ? null : n);
-                                        setSelectedTopic(null);
-                                    }}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    {activeResolutionData.map((entry, i) => (
-                                        <Cell
-                                            key={i}
-                                            fill={entry.color}
-                                            opacity={selectedResolution === null || selectedResolution === entry.name ? 1 : 0.2}
-                                        />
+                        {/* L1 Topic Dropdown */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setDropdownOpen(o => !o)}
+                                className={cn(
+                                    "w-full flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all text-left",
+                                    selectedTopic ? "border-blue-500/30 bg-blue-500/5" : "border-white/5 hover:border-white/10"
+                                )}
+                            >
+                                <span className={cn("text-xs font-bold truncate", selectedTopic ? "text-blue-400" : "text-zinc-400")}>
+                                    {selectedTopic ?? "All Topics"}
+                                </span>
+                                <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-500 shrink-0 ml-2 transition-transform duration-200", dropdownOpen && "rotate-180")} />
+                            </button>
+                            {dropdownOpen && (
+                                <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-2xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
+                                    <button
+                                        onClick={() => { setSelectedTopic(null); setDropdownOpen(false); }}
+                                        className={cn("w-full px-3 py-2.5 hover:bg-white/5 transition-colors text-left text-xs font-bold", !selectedTopic ? "text-white bg-white/5" : "text-zinc-400")}
+                                    >
+                                        All Topics
+                                    </button>
+                                    {l1Topics.map(t => (
+                                        <button
+                                            key={t.name}
+                                            onClick={() => { setSelectedTopic(t.name); setDropdownOpen(false); }}
+                                            className={cn("w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors text-left border-t border-white/5 text-xs font-bold", selectedTopic === t.name ? "text-blue-400 bg-blue-500/5" : "text-zinc-400")}
+                                        >
+                                            <span>{t.name}</span>
+                                            <span className="text-zinc-600 tabular-nums">{t.volume.toLocaleString()}</span>
+                                        </button>
                                     ))}
-                                </Pie>
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", fontSize: "12px", color: "#fff" }}
-                                    formatter={(value) => [`${value}%`, ""]}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-
-                        {/* Resolution legend */}
-                        <div className="space-y-2">
-                            {activeResolutionData.map((d) => (
-                                <button
-                                    key={d.name}
-                                    onClick={() => { setSelectedResolution(selectedResolution === d.name ? null : d.name); setSelectedTopic(null); }}
-                                    className={cn(
-                                        "w-full flex items-center justify-between px-3 py-2 rounded-xl border transition-all text-left",
-                                        selectedResolution === d.name ? "border-white/20 bg-white/5" : "border-white/5 hover:border-white/10"
-                                    )}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                                        <span className="text-xs font-medium text-zinc-300">{d.name}</span>
-                                    </div>
-                                    <span className="text-xs font-black text-white tabular-nums">{d.value}%</span>
-                                </button>
-                            ))}
+                                </div>
+                            )}
                         </div>
 
-                        {/* L1 Topic Dropdown */}
-                        <div className="pt-2 border-t border-white/5">
-                            <p className="text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 mb-3">L1 Topic</p>
-                            <div className="relative">
-                                <button
-                                    onClick={() => setDropdownOpen(o => !o)}
-                                    className={cn(
-                                        "w-full flex items-center justify-between px-3 py-2.5 rounded-xl border transition-all text-left",
-                                        selectedTopic ? "border-blue-500/30 bg-blue-500/5" : "border-white/5 hover:border-white/10"
-                                    )}
-                                >
-                                    <div className="min-w-0">
-                                        {selectedL1 ? (
-                                            <>
-                                                <p className="text-xs font-bold text-blue-400 truncate">{selectedL1.name}</p>
-                                                <p className="text-[10px] text-zinc-600 mt-0.5">Auto-Healed in {selectedL1.healTime} · {selectedL1.volume.toLocaleString()} vol</p>
-                                            </>
-                                        ) : (
-                                            <p className="text-xs font-bold text-zinc-400">All L1 Topics</p>
-                                        )}
-                                    </div>
-                                    <ChevronDown className={cn("w-3.5 h-3.5 text-zinc-500 shrink-0 ml-2 transition-transform duration-200", dropdownOpen && "rotate-180")} />
-                                </button>
-                                {dropdownOpen && (
-                                    <div className="absolute left-0 right-0 top-full mt-1 z-50 rounded-2xl bg-zinc-900 border border-white/10 shadow-2xl overflow-hidden">
-                                        <button
-                                            onClick={() => { setSelectedTopic(null); setSelectedResolution(null); setDropdownOpen(false); }}
-                                            className={cn("w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors text-left", !selectedTopic && "bg-white/5")}
-                                        >
-                                            <span className="text-xs font-bold text-zinc-300">All L1 Topics</span>
-                                        </button>
-                                        {l1Topics.map((t) => (
-                                            <button
-                                                key={t.name}
-                                                onClick={() => { setSelectedTopic(t.name); setSelectedResolution(null); setDropdownOpen(false); }}
-                                                className={cn("w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors text-left border-t border-white/5", selectedTopic === t.name && "bg-blue-500/5")}
-                                            >
-                                                <div className="min-w-0">
-                                                    <p className={cn("text-xs font-bold truncate", selectedTopic === t.name ? "text-blue-400" : "text-zinc-300")}>{t.name}</p>
-                                                    <p className="text-[10px] text-zinc-600 mt-0.5">Auto-Healed in {t.healTime}</p>
-                                                </div>
-                                                <span className="text-xs font-black text-white tabular-nums shrink-0 ml-2">{t.volume.toLocaleString()}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
+                        {/* Top Topics table */}
+                        <div>
+                            <p className="text-[10px] uppercase tracking-[0.2em] font-black text-zinc-600 mb-3">Top Topics by selected category</p>
+                            {/* Column headers */}
+                            <div className="flex items-center px-2 pb-2 border-b border-white/5">
+                                <span className="flex-1 text-[9px] uppercase tracking-[0.15em] font-black text-zinc-700"></span>
+                                <span className="w-20 text-center text-[9px] uppercase tracking-[0.12em] font-black text-zinc-700">Resolution</span>
+                                <span className="w-20 text-center text-[9px] uppercase tracking-[0.12em] font-black text-zinc-700">Repeat Call</span>
+                                <span className="w-16 text-center text-[9px] uppercase tracking-[0.12em] font-black text-zinc-700">Drop off</span>
                             </div>
+                            {/* Rows — sub-topics when a topic is selected, L1 topics otherwise */}
+                            {selectedTopic
+                                ? (L1_TOPIC_METRICS[selectedTopic] ?? []).map((sub) => (
+                                    <div key={sub.name} className="flex items-center px-2 py-2.5 border-b border-white/[0.04]">
+                                        <span className="flex-1 text-xs font-bold truncate text-zinc-300">{sub.name}</span>
+                                        <span className="w-20 text-center text-xs font-black tabular-nums text-emerald-400">{sub.resolution}</span>
+                                        <span className="w-20 text-center text-xs font-black tabular-nums text-amber-400">{sub.repeatCall}</span>
+                                        <span className="w-16 text-center text-xs font-black tabular-nums text-red-400">{sub.dropOff}</span>
+                                    </div>
+                                ))
+                                : l1Topics.map((t) => {
+                                    const m = topicMetrics[t.name] ?? { resolution: "—", repeatCall: "—", dropOff: "—" };
+                                    return (
+                                        <div
+                                            key={t.name}
+                                            className="flex items-center px-2 py-2.5 border-b border-white/[0.04]"
+                                        >
+                                            <span className="flex-1 text-xs font-bold truncate text-zinc-300">{t.name}</span>
+                                            <span className="w-20 text-center text-xs font-black tabular-nums text-emerald-400">{m.resolution}</span>
+                                            <span className="w-20 text-center text-xs font-black tabular-nums text-amber-400">{m.repeatCall}</span>
+                                            <span className="w-16 text-center text-xs font-black tabular-nums text-red-400">{m.dropOff}</span>
+                                        </div>
+                                    );
+                                })
+                            }
                         </div>
                     </motion.div>
 
