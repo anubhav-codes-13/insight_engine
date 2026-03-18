@@ -252,7 +252,6 @@ export default function AdminDashboard() {
                                     <div key={issue.name} className="flex items-center justify-between px-2 py-2.5 hover:bg-white/[0.03] transition-all group">
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors truncate">{issue.name}</p>
-                                            <p className="text-[10px] text-zinc-600 font-medium mt-0.5">Healed in {issue.healingTime}</p>
                                         </div>
                                         <div className="flex items-center gap-3 shrink-0">
                                             <p className="text-sm font-black text-emerald-400 tabular-nums w-12 text-right">{issue.count.toLocaleString()}</p>
