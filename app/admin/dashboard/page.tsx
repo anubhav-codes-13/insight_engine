@@ -24,17 +24,40 @@ type HoverInfo = {
     escalation: number;
 } | null;
 
+type TrendSet = { requests: string; requestsUp: boolean; resolution: string; resolutionUp: boolean; aht: string; ahtUp: boolean; csat: string; csatUp: boolean; dropOff: string; dropOffUp: boolean };
+
+const STAT_TRENDS: Record<DateRange, Record<Channel, TrendSet>> = {
+    "24h": {
+        All:   { requests: "+3.1%", requestsUp: true,  resolution: "+1.2%", resolutionUp: true,  aht: "+0.1m", ahtUp: false, csat: "+0.4%", csatUp: true,  dropOff: "+0.8%", dropOffUp: false },
+        Chat:  { requests: "+4.2%", requestsUp: true,  resolution: "+2.1%", resolutionUp: true,  aht: "-0.1m", ahtUp: true,  csat: "+0.6%", csatUp: true,  dropOff: "-0.4%", dropOffUp: true  },
+        Call:  { requests: "+1.8%", requestsUp: true,  resolution: "-0.9%", resolutionUp: false, aht: "+0.3m", ahtUp: false, csat: "-0.2%", csatUp: false, dropOff: "+1.1%", dropOffUp: false },
+        Email: { requests: "+0.9%", requestsUp: true,  resolution: "-1.4%", resolutionUp: false, aht: "+0.5m", ahtUp: false, csat: "-0.3%", csatUp: false, dropOff: "+1.5%", dropOffUp: false },
+    },
+    "7d": {
+        All:   { requests: "+12.5%", requestsUp: true,  resolution: "+4.2%", resolutionUp: true,  aht: "-0.4m", ahtUp: true,  csat: "+2.1%", csatUp: true,  dropOff: "+0.3%", dropOffUp: false },
+        Chat:  { requests: "+15.3%", requestsUp: true,  resolution: "+6.1%", resolutionUp: true,  aht: "-0.6m", ahtUp: true,  csat: "+3.2%", csatUp: true,  dropOff: "-1.2%", dropOffUp: true  },
+        Call:  { requests: "+8.7%",  requestsUp: true,  resolution: "+1.4%", resolutionUp: true,  aht: "+0.2m", ahtUp: false, csat: "+0.8%", csatUp: true,  dropOff: "+1.9%", dropOffUp: false },
+        Email: { requests: "+5.2%",  requestsUp: true,  resolution: "-2.1%", resolutionUp: false, aht: "+0.8m", ahtUp: false, csat: "-1.1%", csatUp: false, dropOff: "+2.4%", dropOffUp: false },
+    },
+    "30d": {
+        All:   { requests: "+22.8%", requestsUp: true,  resolution: "+8.4%", resolutionUp: true,  aht: "-0.9m", ahtUp: true,  csat: "+4.6%", csatUp: true,  dropOff: "-2.1%", dropOffUp: true  },
+        Chat:  { requests: "+28.1%", requestsUp: true,  resolution: "+11.2%",resolutionUp: true,  aht: "-1.2m", ahtUp: true,  csat: "+5.8%", csatUp: true,  dropOff: "-3.4%", dropOffUp: true  },
+        Call:  { requests: "+14.3%", requestsUp: true,  resolution: "+3.8%", resolutionUp: true,  aht: "-0.3m", ahtUp: true,  csat: "+2.2%", csatUp: true,  dropOff: "+0.7%", dropOffUp: false },
+        Email: { requests: "+9.6%",  requestsUp: true,  resolution: "-0.9%", resolutionUp: false, aht: "+1.1m", ahtUp: false, csat: "-0.4%", csatUp: false, dropOff: "+3.8%", dropOffUp: false },
+    },
+};
+
 const CLUSTER_META: Record<string, { change: string; up: boolean; spark: number[] }> = {
-    "Payment Failed":    { change: "+19%", up: true,  spark: [38, 42, 40, 45, 50, 55, 58, 62] },
+    "Payment Failed": { change: "+19%", up: true, spark: [38, 42, 40, 45, 50, 55, 58, 62] },
     "Order Not Created": { change: "-15%", up: false, spark: [60, 56, 52, 50, 46, 44, 42, 40] },
-    "Refund Delay":      { change: "+11%", up: true,  spark: [30, 31, 33, 32, 35, 36, 38, 40] },
-    "Card Declined":     { change: "+22%", up: true,  spark: [28, 30, 32, 36, 38, 42, 46, 50] },
-    "OTP Not Received":  { change: "+12%", up: true,  spark: [20, 21, 22, 22, 23, 24, 25, 26] },
-    "Delivery Tracking": { change: "+8%",  up: true,  spark: [18, 19, 19, 20, 20, 21, 22, 22] },
-    "Checkout Error":    { change: "+42%", up: true,  spark: [12, 16, 20, 26, 32, 38, 44, 50] },
-    "Login Problem":     { change: "-4%",  up: false, spark: [22, 22, 21, 21, 20, 20, 19, 19] },
-    "App Crash":         { change: "+31%", up: true,  spark: [10, 12, 14, 16, 20, 24, 28, 32] },
-    "Coupon Error":      { change: "+6%",  up: true,  spark: [14, 14, 15, 15, 15, 16, 16, 17] },
+    "Refund Delay": { change: "+11%", up: true, spark: [30, 31, 33, 32, 35, 36, 38, 40] },
+    "Card Declined": { change: "+22%", up: true, spark: [28, 30, 32, 36, 38, 42, 46, 50] },
+    "OTP Not Received": { change: "+12%", up: true, spark: [20, 21, 22, 22, 23, 24, 25, 26] },
+    "Delivery Tracking": { change: "+8%", up: true, spark: [18, 19, 19, 20, 20, 21, 22, 22] },
+    "Checkout Error": { change: "+42%", up: true, spark: [12, 16, 20, 26, 32, 38, 44, 50] },
+    "Login Problem": { change: "-4%", up: false, spark: [22, 22, 21, 21, 20, 20, 19, 19] },
+    "App Crash": { change: "+31%", up: true, spark: [10, 12, 14, 16, 20, 24, 28, 32] },
+    "Coupon Error": { change: "+6%", up: true, spark: [14, 14, 15, 15, 15, 16, 16, 17] },
 };
 
 export default function AdminDashboard() {
@@ -65,7 +88,7 @@ export default function AdminDashboard() {
             containerWidth: rect.width,
             time: tc < 0.5 ? String(a.time) : String(b.time),
             resolution: Number(a.resolution) + (Number(b.resolution) - Number(a.resolution)) * tc,
-            volume:     Number(a.volume)     + (Number(b.volume)     - Number(a.volume))     * tc,
+            volume: Number(a.volume) + (Number(b.volume) - Number(a.volume)) * tc,
             escalation: Number(a.escalation) + (Number(b.escalation) - Number(a.escalation)) * tc,
         });
     }
@@ -74,6 +97,7 @@ export default function AdminDashboard() {
     const stats = CHANNEL_STATS[channel];
     const clusters = CLUSTER_DATA[dateRange][channel];
     const insight = AI_INSIGHTS[dateRange][channel];
+    const trends = STAT_TRENDS[dateRange][channel];
 
     return (
         <AdminLayout>
@@ -138,11 +162,11 @@ export default function AdminDashboard() {
 
                 {/* Metric Cards */}
                 <div className="grid grid-cols-5 gap-3">
-                    <StatCard delay={0.1}  label="Total Requests"   value={stats.totalRequests}  trend="+12.5%" up         icon={<Users className="w-3.5 h-3.5" />} />
-                    <StatCard delay={0.13} label="Resolution Rate"  value={stats.resolutionRate} trend="+4.2%"  up         icon={<Activity className="w-3.5 h-3.5" />} />
-                    <StatCard delay={0.16} label="Avg. Heal Time"   value={stats.avgHealingTime} trend="-0.4m"  up={false} icon={<Clock className="w-3.5 h-3.5" />} />
-                    <StatCard delay={0.19} label="CSAT Score"       value={stats.csatScore}      trend="+2.1%"  up         icon={<Zap className="w-3.5 h-3.5" />} />
-                    <StatCard delay={0.22} label="Drop-Off Rate"    value={stats.dropOffRate}    trend="+0.3%"  up={false} icon={<Activity className="w-3.5 h-3.5" />} />
+                    <StatCard delay={0.1} label="Total Requests" value={stats.totalRequests} trend={trends.requests} up={trends.requestsUp} icon={<Users className="w-3.5 h-3.5" />} />
+                    <StatCard delay={0.13} label="Resolution Rate" value={stats.resolutionRate} trend={trends.resolution} up={trends.resolutionUp} icon={<Activity className="w-3.5 h-3.5" />} />
+                    <StatCard delay={0.16} label="Avg. Handling Time" value={stats.avgHealingTime} trend={trends.aht} up={trends.ahtUp} icon={<Clock className="w-3.5 h-3.5" />} />
+                    <StatCard delay={0.19} label="CSAT Score" value={stats.csatScore} trend={trends.csat} up={trends.csatUp} icon={<Zap className="w-3.5 h-3.5" />} />
+                    <StatCard delay={0.22} label="Drop-Off Rate" value={stats.dropOffRate} trend={trends.dropOff} up={trends.dropOffUp} icon={<Activity className="w-3.5 h-3.5" />} />
                 </div>
 
                 {/* Customer Call Trends + Issue Clusters */}
@@ -180,8 +204,8 @@ export default function AdminDashboard() {
                                     <XAxis dataKey="time" tick={{ fill: "#52525b", fontSize: 9 }} height={18} tickLine={false} />
                                     <YAxis yAxisId="vol" orientation="left" tick={{ fill: "#52525b", fontSize: 9 }} width={38} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v} />
                                     <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} tick={{ fill: "#52525b", fontSize: 9 }} width={30} tickFormatter={(v) => `${v}%`} />
-                                    <Line yAxisId="pct" type="monotone" dataKey="resolution" stroke="#3b82f6" strokeWidth={2}   dot={false} />
-                                    <Line yAxisId="vol" type="monotone" dataKey="volume"     stroke="#10b981" strokeWidth={1.5} dot={false} strokeDasharray="5 4" />
+                                    <Line yAxisId="pct" type="monotone" dataKey="resolution" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                                    <Line yAxisId="vol" type="monotone" dataKey="volume" stroke="#10b981" strokeWidth={1.5} dot={false} strokeDasharray="5 4" />
                                     <Line yAxisId="pct" type="monotone" dataKey="escalation" stroke="#f59e0b" strokeWidth={1.5} dot={false} strokeDasharray="3 3" />
                                 </LineChart>
                             </ResponsiveContainer>
@@ -304,7 +328,7 @@ export default function AdminDashboard() {
     );
 }
 
-function StatCard({ label, value, icon, delay }: { label: string; value: string; trend?: string; up?: boolean; icon: React.ReactNode; delay: number }) {
+function StatCard({ label, value, icon, trend, up, delay }: { label: string; value: string; trend?: string; up?: boolean; icon: React.ReactNode; delay: number }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -312,8 +336,19 @@ function StatCard({ label, value, icon, delay }: { label: string; value: string;
             transition={{ delay }}
             className="p-4 rounded-[20px] bg-zinc-950 border border-white/5 space-y-2.5 hover:border-white/10 transition-all group"
         >
-            <div className="p-2 rounded-lg bg-zinc-900 border border-white/10 text-zinc-400 group-hover:text-blue-500 transition-all duration-300 w-fit">
-                {icon}
+            <div className="flex items-center justify-between">
+                <div className="p-2 rounded-lg bg-zinc-900 border border-white/10 text-zinc-400 group-hover:text-blue-500 transition-all duration-300 w-fit">
+                    {icon}
+                </div>
+                {trend && (
+                    <span className={cn(
+                        "flex items-center gap-1 text-[10px] font-bold tabular-nums",
+                        up ? "text-emerald-400" : "text-red-400"
+                    )}>
+                        <span>{up ? "↗" : "↘"}</span>
+                        {trend}
+                    </span>
+                )}
             </div>
             <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] font-black text-zinc-600 mb-0.5">{label}</p>
