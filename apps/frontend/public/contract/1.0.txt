@@ -1,0 +1,431 @@
+Backend API Contract — Resolve AI Admin Dashboard
+Base URL
+
+/api/v1/admin
+All endpoints return Content-Type: application/json. All accept optional query params date_range (24h | 7d | 30d) and channel (All | Chat | Call | Email).
+
+1. Overview Screen (/admin/dashboard)
+GET /api/v1/admin/overview/stats
+Returns top-level metric cards.
+
+Query params: channel
+
+Response:
+
+
+{
+  "total_requests": "28,431",
+  "avg_healing_time": "2.3 min",
+  "csat_score": "92%",
+  "drop_off_rate": "11%",
+  "automation_rate": 78,
+  "human_escalation": 22
+}
+GET /api/v1/admin/overview/ai-insight
+Returns the AI-generated insight paragraph.
+
+Query params: date_range, channel
+
+Response:
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "insight": "Support volume peaked on Friday at 7,200 interactions — a 24% surge vs. last week. Payment failure clusters drove 62% of escalations. AI resolution rate improved by 4.2 points to 83% after the SLM-v4.0 hot-patch deployed Wednesday."
+}
+GET /api/v1/admin/overview/channel-trends
+Returns time-series data for the 3-line chart (Resolution %, Volume, Escalation %).
+
+Query params: date_range, channel
+
+Response:
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "data": [
+    { "time": "Mon", "resolution": 78, "volume": 5200, "escalation": 16 },
+    { "time": "Tue", "resolution": 81, "volume": 4900, "escalation": 14 },
+    { "time": "Wed", "resolution": 74, "volume": 6100, "escalation": 22 },
+    { "time": "Thu", "resolution": 83, "volume": 5600, "escalation": 12 },
+    { "time": "Fri", "resolution": 70, "volume": 7200, "escalation": 28 },
+    { "time": "Sat", "resolution": 86, "volume": 4100, "escalation": 10 },
+    { "time": "Sun", "resolution": 90, "volume": 3200, "escalation": 8  }
+  ]
+}
+time values are "HH:MM" for 24h, "Mon"–"Sun" for 7d, "Week 1"–"Week 4" for 30d.
+
+GET /api/v1/admin/overview/issue-clusters
+Returns the Issue Clusters sidebar list.
+
+Query params: date_range, channel
+
+Response:
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "clusters": [
+    { "name": "Payment Failed",    "count": 8432, "healing_time": "2m" },
+    { "name": "Order Not Created", "count": 5231, "healing_time": "3m" },
+    { "name": "Refund Delay",      "count": 4120, "healing_time": "5m" },
+    { "name": "Card Declined",     "count": 3890, "healing_time": "2m" },
+    { "name": "OTP Not Received",  "count": 2100, "healing_time": "1m" },
+    { "name": "Delivery Tracking", "count": 1800, "healing_time": "4m" }
+  ]
+}
+GET /api/v1/admin/overview/top-topics
+Returns the Top Topics progress bar section. Static (does not change by filter).
+
+Response:
+
+
+{
+  "topics": [
+    { "topic": "Payment Failed",    "volume": 8432, "share": 100 },
+    { "topic": "Order Not Created", "volume": 5231, "share": 62  },
+    { "topic": "Refund Delay",      "volume": 4120, "share": 49  },
+    { "topic": "Card Declined",     "volume": 3890, "share": 46  },
+    { "topic": "OTP Not Received",  "volume": 2100, "share": 25  },
+    { "topic": "Delivery Tracking", "volume": 1800, "share": 21  },
+    { "topic": "Checkout Error",    "volume": 1560, "share": 18  }
+  ]
+}
+share = percentage relative to the top topic (0–100).
+
+POST /api/v1/admin/overview/ask
+Handles the follow-up AI question input.
+
+Request body:
+
+
+{
+  "question": "Why did escalations spike on Friday?",
+  "date_range": "7d",
+  "channel": "All"
+}
+Response:
+
+
+{
+  "answer": "Friday escalations reached 28% primarily due to a payment gateway degradation between 14:00–19:00 affecting Card Declined and Payment Failed clusters. Volume surged 24% above weekly average."
+}
+2. L1 Deepdive Screen (/admin/monitoring)
+GET /api/v1/admin/l1/resolution
+Returns the Topic Resolution donut chart data.
+
+Query params: date_range, channel, l1_topic (optional — if provided, returns sub-topic resolution for that L1)
+
+Response (without l1_topic):
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "l1_topic": null,
+  "resolution": [
+    { "name": "Fully Resolved", "value": 62, "color": "#10b981" },
+    { "name": "Partial",        "value": 26, "color": "#f59e0b" },
+    { "name": "Unresolved",     "value": 12, "color": "#ef4444" }
+  ]
+}
+Response (with l1_topic=Payment Failed):
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "l1_topic": "Payment Failed",
+  "resolution": [
+    { "name": "Fully Resolved", "value": 61, "color": "#10b981" },
+    { "name": "Partial",        "value": 25, "color": "#f59e0b" },
+    { "name": "Unresolved",     "value": 14, "color": "#ef4444" }
+  ]
+}
+GET /api/v1/admin/l1/topics
+Returns all L1 topics with volumes (for the dropdown).
+
+Query params: date_range, channel
+
+Response:
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "topics": [
+    { "name": "Payment Failed",    "base_volume": 8432, "volume": 8432, "heal_time": "2m" },
+    { "name": "Order Not Created", "base_volume": 5231, "volume": 5231, "heal_time": "3m" },
+    { "name": "Refund Delay",      "base_volume": 4120, "volume": 4120, "heal_time": "5m" },
+    { "name": "Card Declined",     "base_volume": 3890, "volume": 3890, "heal_time": "2m" },
+    { "name": "OTP Not Received",  "base_volume": 2100, "volume": 2100, "heal_time": "1m" },
+    { "name": "Delivery Tracking", "base_volume": 1800, "volume": 1800, "heal_time": "4m" }
+  ]
+}
+volume = base_volume × date_multiplier × channel_split (computed server-side).
+
+GET /api/v1/admin/l1/trending
+Returns Top Trending Topics with sparklines.
+
+Query params: date_range, channel, l1_topic (optional)
+
+Response:
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "l1_topic": null,
+  "trending": [
+    { "name": "Checkout Error",    "change": "+42%", "volume": 1560, "spark": [12, 18, 22, 30, 38, 45] },
+    { "name": "App Crash",         "change": "+31%", "volume": 980,  "spark": [8,  10, 14, 18, 22, 31] },
+    { "name": "OTP Not Received",  "change": "+18%", "volume": 2100, "spark": [20, 22, 21, 24, 26, 28] },
+    { "name": "Delivery Tracking", "change": "+14%", "volume": 1800, "spark": [16, 17, 18, 19, 21, 24] }
+  ]
+}
+GET /api/v1/admin/l1/performing
+Returns Top Performing Topics.
+
+Query params: date_range, channel, l1_topic (optional)
+
+Response:
+
+
+{
+  "date_range": "7d",
+  "channel": "All",
+  "l1_topic": null,
+  "performing": [
+    { "name": "Login Problem",    "resolution_rate": "96%", "avg_time": "58s",    "csat": "94%" },
+    { "name": "OTP Not Received", "resolution_rate": "92%", "avg_time": "1m 2s",  "csat": "91%" },
+    { "name": "Coupon Error",     "resolution_rate": "90%", "avg_time": "1m 20s", "csat": "89%" },
+    { "name": "Card Declined",    "resolution_rate": "87%", "avg_time": "1m 45s", "csat": "87%" }
+  ]
+}
+3. Issue Insights Screen (/admin/issues)
+GET /api/v1/admin/issues
+Returns the full issue insights table.
+
+Query params:
+
+search — string filter on topic name
+category — All | Payments | Orders | Account | Delivery | Technical
+Response:
+
+
+{
+  "category": "All",
+  "search": "",
+  "total": 10,
+  "issues": [
+    {
+      "rank": 1,
+      "name": "Payment Failed",
+      "category": "Payments",
+      "volume": 8432,
+      "csat": "68%",
+      "drop_off": "34%",
+      "aht": "4m 12s",
+      "is_resolved": "61%",
+      "repeat": "29%",
+      "escalation": "18%"
+    },
+    {
+      "rank": 2,
+      "name": "Order Not Created",
+      "category": "Orders",
+      "volume": 5231,
+      "csat": "72%",
+      "drop_off": "22%",
+      "aht": "3m 48s",
+      "is_resolved": "74%",
+      "repeat": "21%",
+      "escalation": "12%"
+    },
+    {
+      "rank": 3,
+      "name": "Refund Delay",
+      "category": "Payments",
+      "volume": 4120,
+      "csat": "64%",
+      "drop_off": "41%",
+      "aht": "5m 30s",
+      "is_resolved": "52%",
+      "repeat": "38%",
+      "escalation": "28%"
+    },
+    {
+      "rank": 4,
+      "name": "Card Declined",
+      "category": "Payments",
+      "volume": 3890,
+      "csat": "75%",
+      "drop_off": "29%",
+      "aht": "2m 55s",
+      "is_resolved": "68%",
+      "repeat": "24%",
+      "escalation": "15%"
+    },
+    {
+      "rank": 5,
+      "name": "OTP Not Received",
+      "category": "Account",
+      "volume": 2100,
+      "csat": "82%",
+      "drop_off": "18%",
+      "aht": "1m 20s",
+      "is_resolved": "88%",
+      "repeat": "12%",
+      "escalation": "9%"
+    },
+    {
+      "rank": 6,
+      "name": "Delivery Tracking",
+      "category": "Delivery",
+      "volume": 1800,
+      "csat": "80%",
+      "drop_off": "12%",
+      "aht": "2m 10s",
+      "is_resolved": "86%",
+      "repeat": "10%",
+      "escalation": "6%"
+    },
+    {
+      "rank": 7,
+      "name": "Checkout Error",
+      "category": "Technical",
+      "volume": 1560,
+      "csat": "70%",
+      "drop_off": "37%",
+      "aht": "3m 40s",
+      "is_resolved": "58%",
+      "repeat": "31%",
+      "escalation": "21%"
+    },
+    {
+      "rank": 8,
+      "name": "Login Problem",
+      "category": "Account",
+      "volume": 1240,
+      "csat": "91%",
+      "drop_off": "8%",
+      "aht": "58s",
+      "is_resolved": "94%",
+      "repeat": "6%",
+      "escalation": "4%"
+    },
+    {
+      "rank": 9,
+      "name": "App Crash",
+      "category": "Technical",
+      "volume": 980,
+      "csat": "55%",
+      "drop_off": "55%",
+      "aht": "6m 05s",
+      "is_resolved": "40%",
+      "repeat": "44%",
+      "escalation": "44%"
+    },
+    {
+      "rank": 10,
+      "name": "Coupon Error",
+      "category": "Payments",
+      "volume": 850,
+      "csat": "78%",
+      "drop_off": "16%",
+      "aht": "1m 45s",
+      "is_resolved": "82%",
+      "repeat": "14%",
+      "escalation": "7%"
+    }
+  ]
+}
+GET /api/v1/admin/issues/categories
+Returns the list of category filter pills.
+
+Response:
+
+
+{
+  "categories": ["All", "Payments", "Orders", "Account", "Delivery", "Technical"]
+}
+Full Endpoint Summary
+Method	Endpoint	Screen	Filters
+GET	/api/v1/admin/overview/stats	Overview	channel
+GET	/api/v1/admin/overview/ai-insight	Overview	date_range, channel
+GET	/api/v1/admin/overview/channel-trends	Overview	date_range, channel
+GET	/api/v1/admin/overview/issue-clusters	Overview	date_range, channel
+GET	/api/v1/admin/overview/top-topics	Overview	—
+POST	/api/v1/admin/overview/ask	Overview	body
+GET	/api/v1/admin/l1/topics	L1 Deepdive	date_range, channel
+GET	/api/v1/admin/l1/resolution	L1 Deepdive	date_range, channel, l1_topic
+GET	/api/v1/admin/l1/trending	L1 Deepdive	date_range, channel, l1_topic
+GET	/api/v1/admin/l1/performing	L1 Deepdive	date_range, channel, l1_topic
+GET	/api/v1/admin/issues	Issue Insights	search, category
+GET	/api/v1/admin/issues/categories	Issue Insights	—
+Python FastAPI skeleton
+
+from fastapi import FastAPI, Query
+from typing import Optional
+
+app = FastAPI()
+
+@app.get("/api/v1/admin/overview/stats")
+def get_stats(channel: str = "All"):
+    ...
+
+@app.get("/api/v1/admin/overview/ai-insight")
+def get_ai_insight(date_range: str = "7d", channel: str = "All"):
+    ...
+
+@app.get("/api/v1/admin/overview/channel-trends")
+def get_channel_trends(date_range: str = "7d", channel: str = "All"):
+    ...
+
+@app.get("/api/v1/admin/overview/issue-clusters")
+def get_issue_clusters(date_range: str = "7d", channel: str = "All"):
+    ...
+
+@app.get("/api/v1/admin/overview/top-topics")
+def get_top_topics():
+    ...
+
+@app.post("/api/v1/admin/overview/ask")
+def ask_question(body: dict):
+    ...
+
+@app.get("/api/v1/admin/l1/topics")
+def get_l1_topics(date_range: str = "7d", channel: str = "All"):
+    ...
+
+@app.get("/api/v1/admin/l1/resolution")
+def get_resolution(date_range: str = "7d", channel: str = "All", l1_topic: Optional[str] = None):
+    ...
+
+@app.get("/api/v1/admin/l1/trending")
+def get_trending(date_range: str = "7d", channel: str = "All", l1_topic: Optional[str] = None):
+    ...
+
+@app.get("/api/v1/admin/l1/performing")
+def get_performing(date_range: str = "7d", channel: str = "All", l1_topic: Optional[str] = None):
+    ...
+
+@app.get("/api/v1/admin/issues")
+def get_issues(search: str = "", category: str = "All"):
+    ...
+
+@app.get("/api/v1/admin/issues/categories")
+def get_categories():
+    ...
+Key field types to note
+Field	Type	Notes
+volume, count	int	Raw number, frontend calls .toLocaleString()
+csat, drop_off, is_resolved, repeat, escalation, resolution_rate	string	Include % sign — e.g. "68%"
+aht, avg_time, healing_time, heal_time	string	Human-readable — e.g. "4m 12s", "2m"
+resolution, escalation (chart)	int (0–100)	Percentage value, no % sign
+share	int (0–100)	Relative share vs top topic
+spark	int[]	6 data points for mini sparkline chart
+color	string	Hex color code — #10b981, #f59e0b, #ef4444
