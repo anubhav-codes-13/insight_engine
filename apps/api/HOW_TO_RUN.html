@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Insight Engine — How to Run</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:        #0a0e1a;
+      --surface:   #111827;
+      --card:      #1a2236;
+      --border:    #1e3a5f;
+      --accent:    #3b82f6;
+      --accent2:   #8b5cf6;
+      --green:     #10b981;
+      --yellow:    #f59e0b;
+      --red:       #ef4444;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --code-bg:   #0d1117;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      padding: 80px 24px 60px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(59,130,246,.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 40% at 80% 50%, rgba(139,92,246,.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(59,130,246,.12);
+      border: 1px solid rgba(59,130,246,.3);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 13px;
+      color: #93c5fd;
+      margin-bottom: 28px;
+      letter-spacing: .5px;
+    }
+    .badge .dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
+      50%      { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #e2e8f0 30%, #93c5fd 70%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .pill svg { width:14px; height:14px; flex-shrink:0; }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    /* ── STEP CARDS ── */
+    .steps { display: flex; flex-direction: column; gap: 20px; margin-bottom: 48px; }
+
+    .step-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color .25s, box-shadow .25s;
+    }
+    .step-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(59,130,246,.15), 0 8px 32px rgba(0,0,0,.4);
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px 16px;
+    }
+    .step-num {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .step-num.blue   { background: rgba(59,130,246,.15); color: #60a5fa; }
+    .step-num.purple { background: rgba(139,92,246,.15); color: #a78bfa; }
+    .step-num.green  { background: rgba(16,185,129,.15); color: #34d399; }
+    .step-num.yellow { background: rgba(245,158,11,.15); color: #fbbf24; }
+
+    .step-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .step-desc  { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+    .step-body { padding: 0 24px 20px; }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid #1e2d3d;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .code-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      background: #161b27;
+      border-bottom: 1px solid #1e2d3d;
+    }
+    .code-bar span { font-size: 11px; color: var(--muted); font-family: monospace; }
+    .copy-btn {
+      background: none;
+      border: 1px solid #1e3a5f;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .copy-btn:hover { background: rgba(59,130,246,.1); color: #60a5fa; border-color: var(--accent); }
+    .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+    pre {
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #cdd9e5;
+    }
+    .cmd  { color: #79c0ff; }
+    .flag { color: #ffab70; }
+    .path { color: #a5d6ff; }
+    .cmt  { color: #8b949e; font-style: italic; }
+    .ok   { color: #56d364; }
+
+    /* ── INFO CHIPS ── */
+    .info-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .chip.green  { background: rgba(16,185,129,.1); color: #34d399; border: 1px solid rgba(16,185,129,.25); }
+    .chip.blue   { background: rgba(59,130,246,.1); color: #60a5fa; border: 1px solid rgba(59,130,246,.25); }
+    .chip.purple { background: rgba(139,92,246,.1); color: #a78bfa; border: 1px solid rgba(139,92,246,.25); }
+
+    /* ── ENDPOINT CARD ── */
+    .endpoint-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+    .endpoint-url {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .method-badge {
+      background: rgba(16,185,129,.15);
+      color: #34d399;
+      border: 1px solid rgba(16,185,129,.3);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
+    .url-text {
+      font-family: monospace;
+      font-size: 14px;
+      color: #93c5fd;
+      background: rgba(59,130,246,.08);
+      border: 1px solid rgba(59,130,246,.2);
+      border-radius: 8px;
+      padding: 6px 14px;
+      word-break: break-all;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #1a2840;
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,.02); }
+    .param-name { font-family: monospace; color: #f0abfc; font-size: 13px; }
+    .param-default { font-family: monospace; color: #fbbf24; font-size: 12px; }
+    .param-values  { font-family: monospace; color: #86efac; font-size: 12px; line-height: 1.8; }
+
+    /* ── ARCH DIAGRAM ── */
+    .arch {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 24px;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .arch-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 120px;
+    }
+    .arch-box .label { font-size: 10px; color: var(--muted); font-weight: 400; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .arch-box.blue   { border-color: rgba(59,130,246,.4); color: #93c5fd; }
+    .arch-box.purple { border-color: rgba(139,92,246,.4); color: #c4b5fd; }
+    .arch-box.green  { border-color: rgba(16,185,129,.4); color: #6ee7b7; }
+    .arch-box.yellow { border-color: rgba(245,158,11,.4); color: #fde68a; }
+    .arrow {
+      color: var(--muted);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .hero { padding: 60px 16px 40px; }
+      .container { padding: 0 16px 60px; }
+      .step-header { padding: 16px 16px 12px; }
+      .step-body { padding: 0 16px 16px; }
+      .endpoint-card { padding: 16px; }
+      .arch-flow { flex-direction: column; }
+      .arrow { transform: rotate(90deg); }
+      pre { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ HERO ══════════════════════════════ -->
+<section class="hero">
+  <div class="badge"><span class="dot"></span> Backend Setup Guide</div>
+  <h1>Insight Engine<br>Backend</h1>
+  <p>A Python ETL pipeline + FastAPI server that processes customer support data and serves pre-computed dashboard metrics.</p>
+  <div class="pill-row">
+    <span class="pill">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      FastAPI
+    </span>
+    <span class="pill">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+      Python 3.11+
+    </span>
+    <span class="pill">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>
+      Port 8000
+    </span>
+    <span class="pill">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      CORS Enabled
+    </span>
+  </div>
+</section>
+
+<!-- ══════════════════════════ MAIN CONTENT ══════════════════════════ -->
+<div class="container">
+
+  <!-- Architecture -->
+  <p class="section-label">Architecture</p>
+  <div class="arch">
+    <div class="arch-flow">
+      <div class="arch-box blue"><div class="label">Source</div>case_level_data.csv</div>
+      <span class="arrow">→</span>
+      <div class="arch-box purple"><div class="label">ETL</div>etl_pipeline.py</div>
+      <span class="arrow">→</span>
+      <div class="arch-box yellow"><div class="label">Output</div>12 JSON files</div>
+      <span class="arrow">→</span>
+      <div class="arch-box green"><div class="label">API</div>localhost:8000</div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <p class="section-label">Setup Steps</p>
+  <div class="steps">
+
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num blue">1</div>
+        <div>
+          <div class="step-title">Navigate to the project folder</div>
+          <div class="step-desc">Open a terminal and change into the backend directory.</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <div class="code-bar">
+            <span>bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><span class="cmd">cd</span> <span class="path">"C:\Users\IN7934\Desktop\2026\March-2026\backend_fronted_connector_files"</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num purple">2</div>
+        <div>
+          <div class="step-title">Create a virtual environment</div>
+          <div class="step-desc">Isolates project dependencies from your global Python installation.</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <div class="code-bar">
+            <span>bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><span class="cmd">python</span> <span class="flag">-m venv</span> venv</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num green">3</div>
+        <div>
+          <div class="step-title">Install dependencies</div>
+          <div class="step-desc">Installs pandas, FastAPI, and Uvicorn into the virtual environment.</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <div class="code-bar">
+            <span>bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><span class="cmt"># Windows</span>
+<span class="path">venv\Scripts\pip</span> install pandas fastapi uvicorn
+
+<span class="cmt"># macOS / Linux</span>
+<span class="path">venv/bin/pip</span> install pandas fastapi uvicorn</pre>
+        </div>
+        <div class="info-row">
+          <span class="chip blue">pandas</span>
+          <span class="chip blue">fastapi</span>
+          <span class="chip blue">uvicorn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num yellow">4</div>
+        <div>
+          <div class="step-title">Run the ETL pipeline</div>
+          <div class="step-desc">Processes the CSV and writes 12 pre-computed JSON files to <code style="color:#fbbf24;font-size:12px">output/</code>. Re-run whenever source data changes.</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <div class="code-bar">
+            <span>bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><span class="cmt"># Windows</span>
+<span class="path">venv\Scripts\python.exe</span> etl_pipeline.py
+
+<span class="cmt"># macOS / Linux</span>
+<span class="path">venv/bin/python</span> etl_pipeline.py</pre>
+        </div>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-bar"><span>expected output</span></div>
+          <pre><span class="ok">Loaded 1000 rows | date range: 2026-02-18 to 2026-03-18</span>
+<span class="ok">  [01/12] Written: dashboard_1d_all.json</span>
+<span class="ok">  [02/12] Written: dashboard_1d_chat.json</span>
+  ...
+<span class="ok">  [12/12] Written: dashboard_30d_email.json</span>
+<span class="ok">All 12 dashboard JSON files saved to 'output/'</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num blue">5</div>
+        <div>
+          <div class="step-title">Start the API server</div>
+          <div class="step-desc">Starts Uvicorn with hot-reload. Leave this terminal open while your frontend is running.</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="code-block">
+          <div class="code-bar">
+            <span>bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><span class="cmt"># Windows</span>
+<span class="path">venv\Scripts\python.exe</span> api.py
+
+<span class="cmt"># macOS / Linux</span>
+<span class="path">venv/bin/python</span> api.py</pre>
+        </div>
+        <div class="code-block" style="margin-top:10px">
+          <div class="code-bar"><span>expected output</span></div>
+          <pre><span class="ok">INFO:     Uvicorn running on http://0.0.0.0:8000</span>
+<span class="ok">INFO:     Application startup complete.</span></pre>
+        </div>
+        <div class="info-row">
+          <span class="chip green">● Live at localhost:8000</span>
+          <span class="chip purple">Hot-reload enabled</span>
+          <span class="chip blue">CORS open to *</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- API Endpoint -->
+  <p class="section-label">API Endpoint</p>
+  <div class="endpoint-card">
+    <div class="endpoint-url">
+      <span class="method-badge">GET</span>
+      <span class="url-text">http://localhost:8000/api/dashboard</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Default</th>
+          <th>Valid Values</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="param-name">time_window</span></td>
+          <td><span class="param-default">"7d"</span></td>
+          <td><span class="param-values">24h<br>7d<br>30d</span></td>
+          <td style="color:var(--muted);font-size:13px">Time range for the dashboard data</td>
+        </tr>
+        <tr>
+          <td><span class="param-name">channel</span></td>
+          <td><span class="param-default">"all"</span></td>
+          <td><span class="param-values">all<br>chat<br>call<br>email</span></td>
+          <td style="color:var(--muted);font-size:13px">Support channel filter</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:20px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Example Requests</div>
+      <div class="code-block">
+        <div class="code-bar">
+          <span>Frontend fetch — JavaScript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt">// Default — 7 days, all channels</span>
+<span class="cmd">fetch</span>(<span style="color:#a5d6ff">'http://localhost:8000/api/dashboard'</span>)
+
+<span class="cmt">// 30-day Chat data</span>
+<span class="cmd">fetch</span>(<span style="color:#a5d6ff">'http://localhost:8000/api/dashboard?time_window=30d&channel=chat'</span>)
+
+<span class="cmt">// 24-hour All channels</span>
+<span class="cmd">fetch</span>(<span style="color:#a5d6ff">'http://localhost:8000/api/dashboard?time_window=24h&channel=all'</span>)</pre>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px;font-size:13px;color:#93c5fd;">
+      📖 &nbsp;Interactive Swagger docs available at
+      <strong>http://localhost:8000/docs</strong>
+    </div>
+  </div>
+
+  <!-- Response Structure -->
+  <p class="section-label">Response Structure</p>
+  <div class="step-card" style="margin-bottom:48px">
+    <div class="step-body" style="padding-top:20px">
+      <div class="code-block">
+        <div class="code-bar">
+          <span>JSON response schema</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span style="color:#79c0ff">{</span>
+  <span style="color:#f0abfc">"filters"</span>:         <span style="color:#8b949e">{ time, channel, start_date, end_date }</span>
+  <span style="color:#f0abfc">"kpis"</span>:            <span style="color:#8b949e">{ total_requests, resolution_rate, aht, csat, drop_off }</span>
+  <span style="color:#f0abfc">"charts"</span>:          <span style="color:#8b949e">{ trends: [...], clusters: [...] }</span>
+  <span style="color:#f0abfc">"ai_insight"</span>:      <span style="color:#a5d6ff">"Support volume reached 250 interactions..."</span>
+  <span style="color:#f0abfc">"monitoring"</span>:      <span style="color:#8b949e">{ trending: [...], performing: [...], category_metrics: [...] }</span>
+  <span style="color:#f0abfc">"issues_insights"</span>: <span style="color:#8b949e">[ { l1_topic, l2_topic, volume, csat, ... } ]</span>
+<span style="color:#79c0ff">}</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Ref -->
+  <p class="section-label">Quick Reference</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:48px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Frontend</div>
+      <div style="font-family:monospace;color:#93c5fd;font-size:14px">localhost:3000</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Backend API</div>
+      <div style="font-family:monospace;color:#34d399;font-size:14px">localhost:8000</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Swagger Docs</div>
+      <div style="font-family:monospace;color:#a78bfa;font-size:14px">localhost:8000/docs</div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">JSON Output Files</div>
+      <div style="font-family:monospace;color:#fbbf24;font-size:14px">output/ (12 files)</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Insight Engine Backend &nbsp;·&nbsp; FastAPI + Uvicorn + Pandas &nbsp;·&nbsp;
+  <a href="http://localhost:8000/docs" target="_blank">Open API Docs →</a>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
